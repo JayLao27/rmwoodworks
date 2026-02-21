@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules;
 class AuthController extends Controller
 {
 	public function showLogin()
