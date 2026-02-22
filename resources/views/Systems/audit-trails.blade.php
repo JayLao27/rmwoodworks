@@ -22,20 +22,97 @@
                 </div>
             </div>
 
-            <!-- Role Filters -->
-            <div class="flex flex-wrap items-center gap-3">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest mr-2">Filter by Role:</span>
-                <a href="{{ route('audit-trails') }}" 
-                   class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ !$selectedRole ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
-                    All Activity
-                </a>
-                @foreach($availableRoles as $role)
-                    <a href="{{ route('audit-trails', ['role' => $role]) }}" 
-                       class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ $selectedRole === $role ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
-                        {{ ucwords(str_replace(['_', '-'], ' ', $role)) }}
+            <!-- Role & Date Filters -->
+            <div class="flex flex-col gap-6">
+                <!-- Row 1: Quick Filters & Search -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="setAuditQuickFilter('today')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ request('date_from') == date('Y-m-d') && request('date_to') == date('Y-m-d') ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
+                            Today
+                        </button>
+                        <button type="button" onclick="setAuditQuickFilter('yesterday')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ request('date_from') == date('Y-m-d', strtotime('-1 day')) && request('date_to') == date('Y-m-d', strtotime('-1 day')) ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
+                            Yesterday
+                        </button>
+                        <button type="button" onclick="setAuditQuickFilter('week')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ request('date_from') == date('Y-m-d', strtotime('-7 days')) ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
+                            1 Week
+                        </button>
+                        <button type="button" onclick="setAuditQuickFilter('month')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ request('date_from') == date('Y-m-d', strtotime('-1 month')) ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
+                            1 Month
+                        </button>
+                        <button type="button" onclick="setAuditQuickFilter('year')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ request('date_from') == date('Y-m-d', strtotime('-1 year')) ? 'bg-amber-500 text-white border-amber-500 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
+                            1 Year
+                        </button>
+                    </div>
+
+                    <form id="auditFilterForm" action="{{ route('audit-trails') }}" method="GET" class="flex flex-wrap items-center gap-3">
+                        @if($selectedRole)
+                            <input type="hidden" name="role" value="{{ $selectedRole }}">
+                        @endif
+                        <div class="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-amber-200 shadow-sm">
+                            <input type="date" name="date_from" id="auditDateFrom" value="{{ $dateFrom }}" class="text-xs font-bold text-gray-700 border-none focus:ring-0 bg-transparent py-1">
+                            <span class="text-gray-400 text-xs font-bold">to</span>
+                            <input type="date" name="date_to" id="auditDateTo" value="{{ $dateTo }}" class="text-xs font-bold text-gray-700 border-none focus:ring-0 bg-transparent py-1">
+                            <button type="submit" class="p-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Row 2: Role Filters -->
+                <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-amber-200/50">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest mr-2">Filter by Role:</span>
+                    <a href="{{ route('audit-trails', request()->only(['date_from', 'date_to'])) }}" 
+                       class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ !$selectedRole ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
+                        All Activity
                     </a>
-                @endforeach
+                    @foreach($availableRoles as $role)
+                        <a href="{{ route('audit-trails', array_merge(request()->only(['date_from', 'date_to']), ['role' => $role])) }}" 
+                           class="px-4 py-2 text-xs font-bold rounded-xl transition-all border {{ $selectedRole === $role ? 'bg-slate-800 text-white border-slate-800 shadow-md' : 'bg-white text-gray-600 border-amber-200 hover:bg-amber-50' }}">
+                            {{ ucwords(str_replace(['_', '-'], ' ', $role)) }}
+                        </a>
+                    @endforeach
+                </div>
             </div>
+
+            <script>
+                function setAuditQuickFilter(period) {
+                    const today = new Date();
+                    let fromDate = new Date();
+                    let toDate = new Date();
+
+                    switch(period) {
+                        case 'today':
+                            break;
+                        case 'yesterday':
+                            fromDate.setDate(today.getDate() - 1);
+                            toDate.setDate(today.getDate() - 1);
+                            break;
+                        case 'week':
+                            fromDate.setDate(today.getDate() - 7);
+                            break;
+                        case 'month':
+                            fromDate.setMonth(today.getMonth() - 1);
+                            break;
+                        case 'year':
+                            fromDate.setFullYear(today.getFullYear() - 1);
+                            break;
+                    }
+
+                    const formatDate = (date) => {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        return `${year}-${month}-${day}`;
+                    };
+
+                    document.getElementById('auditDateFrom').value = formatDate(fromDate);
+                    document.getElementById('auditDateTo').value = formatDate(toDate);
+                    document.getElementById('auditFilterForm').submit();
+                }
+            </script>
         </div>
     </div>
 
