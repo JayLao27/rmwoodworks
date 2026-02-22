@@ -13,11 +13,33 @@ class AuditTrailController extends Controller
 {
     public function index(Request $request)
     {
-        $limit = 100; // Increased limit for better filtering
+        $limit = 100;
         $selectedRole = $request->input('role');
+        $dateFrom = $request->input('date_from');
+        $dateTo = $request->input('date_to');
 
-        $inventory = InventoryMovement::with(['user', 'item'])
-            ->latest()
+        $filterDates = function ($query) use ($dateFrom, $dateTo) {
+            if ($dateFrom) {
+                $query->whereDate('created_at', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $query->whereDate('created_at', '<=', $dateTo);
+            }
+            return $query;
+        };
+
+        // For models that primarily use updated_at for their "last action"
+        $filterUpdatedDates = function ($query) use ($dateFrom, $dateTo) {
+            if ($dateFrom) {
+                $query->whereDate('updated_at', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $query->whereDate('updated_at', '<=', $dateTo);
+            }
+            return $query;
+        };
+
+        $inventory = $filterDates(InventoryMovement::with(['user', 'item'])->latest())
             ->limit($limit)
             ->get()
             ->map(function ($item) {
@@ -33,8 +55,7 @@ class AuditTrailController extends Controller
                 ];
             });
 
-        $sales = SalesOrder::with(['user', 'customer'])
-            ->latest()
+        $sales = $filterUpdatedDates(SalesOrder::with(['user', 'customer'])->latest())
             ->limit($limit)
             ->get()
             ->map(function ($item) {
@@ -50,8 +71,7 @@ class AuditTrailController extends Controller
                 ];
             });
 
-        $accounting = Accounting::with(['user', 'salesOrder', 'purchaseOrder'])
-            ->latest()
+        $accounting = $filterDates(Accounting::with(['user', 'salesOrder', 'purchaseOrder'])->latest())
             ->limit($limit)
             ->get()
             ->map(function ($item) {
@@ -67,8 +87,7 @@ class AuditTrailController extends Controller
                 ];
             });
 
-        $production = WorkOrder::with(['user', 'product'])
-            ->latest()
+        $production = $filterUpdatedDates(WorkOrder::with(['user', 'product'])->latest())
             ->limit($limit)
             ->get()
             ->map(function ($item) {
@@ -84,8 +103,7 @@ class AuditTrailController extends Controller
                 ];
             });
 
-        $procurement = PurchaseOrder::with(['user', 'supplier'])
-            ->latest()
+        $procurement = $filterUpdatedDates(PurchaseOrder::with(['user', 'supplier'])->latest())
             ->limit($limit)
             ->get()
             ->map(function ($item) {
@@ -123,6 +141,6 @@ class AuditTrailController extends Controller
             $activities = $allActivities->values();
         }
 
-        return view('Systems.audit-trails', compact('activities', 'availableRoles', 'selectedRole'));
+        return view('Systems.audit-trails', compact('activities', 'availableRoles', 'selectedRole', 'dateFrom', 'dateTo'));
     }
 }
