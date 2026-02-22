@@ -198,6 +198,10 @@ class ProductionController extends Controller
                 $createdWorkOrders[] = $workOrder;
             }
 
+            $count = count($createdWorkOrders);
+            $productNames = collect($createdWorkOrders)->pluck('product_name')->implode(', ');
+            \App\Models\SystemActivity::log('Production', 'Work Orders Created', "{$count} work orders created for: {$productNames}.", 'purple');
+
             // Automatically update Sales Order status to In production
             if ($salesOrder->status === 'Pending') {
                 $salesOrder->update(['status' => 'In production']);
@@ -350,6 +354,8 @@ class ProductionController extends Controller
             }
         }
         
+        \App\Models\SystemActivity::log('Production', 'Work Order Completed', "Work Order #{$workOrder->order_number} for {$workOrder->product_name} has been completed.", 'emerald');
+
         $message = 'Work order marked as completed and inventory updated.';
         
         if ($request->wantsJson()) {
@@ -427,6 +433,7 @@ class ProductionController extends Controller
                     ]);
                 }
             }
+            \App\Models\SystemActivity::log('Production', 'Work Order Cancelled', "Work Order #{$workOrder->order_number} was cancelled.", 'red');
 
             return response()->json([
                 'success' => true,
