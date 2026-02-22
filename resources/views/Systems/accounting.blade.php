@@ -341,18 +341,24 @@
 						<input type="text" id="modalSearchInput" placeholder="Search by Order # or Name..." class="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-800">
 					</div>
 					<div class="w-48">
-						<select id="modalStatusFilter" class="w-full h-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-800">
-							<option value="all">All Status</option>
-							<option value="unpaid">Unpaid / Partial</option>
-							<option value="paid">Fully Paid</option>
+						<select id="modalSortFilter" class="w-full h-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-800">
+							<option value="random">Random Order</option>
+							<option value="high-low">Amount: High to Low</option>
+							<option value="low-high">Amount: Low to High</option>
 						</select>
 					</div>
 				</div>
 
 				<!-- Sales Orders List -->
 				<div id="salesOrdersContainer" class="space-y-3 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
-					@forelse($salesOrders as $salesOrder)
-						<div onclick="selectTransaction('{{ $salesOrder->order_number }}', {{ $salesOrder->total_amount }}, '{{ \Carbon\Carbon::parse($salesOrder->order_date)->format('F d, Y') }}', 'Income', {{ $salesOrder->id }}, {{ $salesOrder->remaining_balance }})" class="p-4 bg-white border-2 border-gray-300 rounded-xl hover:border-green-500 hover:bg-green-50 cursor-pointer transition-all shadow-md hover:shadow-lg">
+					@php
+						$filteredSalesOrders = $salesOrders->filter(fn($order) => $order->remaining_balance > 0)->shuffle();
+					@endphp
+					@forelse($filteredSalesOrders as $salesOrder)
+						<div onclick="selectTransaction('{{ $salesOrder->order_number }}', {{ $salesOrder->total_amount }}, '{{ \Carbon\Carbon::parse($salesOrder->order_date)->format('F d, Y') }}', 'Income', {{ $salesOrder->id }}, {{ $salesOrder->remaining_balance }})" 
+                             data-amount="{{ $salesOrder->remaining_balance }}" 
+                             data-random="{{ rand() }}"
+                             class="transaction-item p-4 bg-white border-2 border-gray-300 rounded-xl hover:border-green-500 hover:bg-green-50 cursor-pointer transition-all shadow-md hover:shadow-lg">
 							<div class="flex justify-between items-start">
 								<div class="flex-1">
 									<h3 class="font-bold text-gray-800 text-lg">{{ $salesOrder->order_number }}</h3>
@@ -363,13 +369,9 @@
 									<span class="px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-bold rounded-lg shadow-lg">
 										₱{{ number_format($salesOrder->total_amount, 2) }}
 									</span>
-									@if($salesOrder->remaining_balance > 0)
-										<span class="px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded-lg">
-											Balance: ₱{{ number_format($salesOrder->remaining_balance, 2) }}
-										</span>
-									@else
-										<span class="px-2 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg">Fully Paid</span>
-									@endif
+									<span class="px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded-lg">
+										Balance: ₱{{ number_format($salesOrder->remaining_balance, 2) }}
+									</span>
 								</div>
 							</div>
 							<div class="mt-3 pt-3 border-t border-gray-200">
@@ -381,15 +383,21 @@
 							<svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
 							</svg>
-							<p class="text-gray-500">No sales orders available</p>
+							<p class="text-gray-500">No pending sales orders available</p>
 						</div>
 					@endforelse
 				</div>
 
 				<!-- Purchase Orders List -->
 				<div id="purchaseOrdersContainer" class="space-y-3 max-h-80 overflow-y-auto pr-2 hidden custom-scrollbar">
-					@forelse($purchaseOrders as $purchaseOrder)
-						<div onclick="selectTransaction('{{ $purchaseOrder->order_number }}', {{ $purchaseOrder->total_amount }}, '{{ \Carbon\Carbon::parse($purchaseOrder->order_date)->format('F d, Y') }}', 'Expense', {{ $purchaseOrder->id }}, {{ $purchaseOrder->remaining_balance }})" class="p-4 bg-white border-2 border-gray-300 rounded-xl hover:border-red-500 hover:bg-red-50 cursor-pointer transition-all shadow-md hover:shadow-lg">
+					@php
+						$filteredPurchaseOrders = $purchaseOrders->filter(fn($order) => $order->remaining_balance > 0)->shuffle();
+					@endphp
+					@forelse($filteredPurchaseOrders as $purchaseOrder)
+						<div onclick="selectTransaction('{{ $purchaseOrder->order_number }}', {{ $purchaseOrder->total_amount }}, '{{ \Carbon\Carbon::parse($purchaseOrder->order_date)->format('F d, Y') }}', 'Expense', {{ $purchaseOrder->id }}, {{ $purchaseOrder->remaining_balance }})" 
+                             data-amount="{{ $purchaseOrder->remaining_balance }}" 
+                             data-random="{{ rand() }}"
+                             class="transaction-item p-4 bg-white border-2 border-gray-300 rounded-xl hover:border-red-500 hover:bg-red-50 cursor-pointer transition-all shadow-md hover:shadow-lg">
 							<div class="flex justify-between items-start">
 								<div class="flex-1">
 									<h3 class="font-bold text-gray-800 text-lg">{{ $purchaseOrder->order_number }}</h3>
@@ -400,13 +408,9 @@
 									<span class="px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold rounded-lg shadow-lg">
 										₱{{ number_format($purchaseOrder->total_amount, 2) }}
 									</span>
-									@if($purchaseOrder->remaining_balance > 0)
-										<span class="px-2 py-1 bg-yellow-600 text-white text-xs font-semibold rounded-lg">
-											Balance: ₱{{ number_format($purchaseOrder->remaining_balance, 2) }}
-										</span>
-									@else
-										<span class="px-2 py-1 bg-green-600 text-white text-xs font-semibold rounded-lg">Fully Paid</span>
-									@endif
+									<span class="px-2 py-1 bg-yellow-600 text-white text-xs font-semibold rounded-lg">
+										Balance: ₱{{ number_format($purchaseOrder->remaining_balance, 2) }}
+									</span>
 								</div>
 							</div>
 							<div class="mt-3 pt-3 border-t border-gray-200">
@@ -418,7 +422,7 @@
 							<svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
 							</svg>
-							<p class="text-gray-500">No purchase orders available</p>
+							<p class="text-gray-500">No pending purchase orders available</p>
 						</div>
 					@endforelse
 				</div>
@@ -607,12 +611,11 @@
 			filterModalItems(); // Re-apply filters
 		}
 
-		// Modal Filtering Logic
+		// Modal Filtering and Sorting Logic
 		function filterModalItems() {
 			const searchTerm = document.getElementById('modalSearchInput').value.toLowerCase();
-			const statusFilter = document.getElementById('modalStatusFilter').value;
+			const sortOrder = document.getElementById('modalSortFilter').value;
 			
-			// Determine which container is active
 			const isSalesActive = !document.getElementById('salesOrdersContainer').classList.contains('hidden');
 			const container = isSalesActive 
 				? document.getElementById('salesOrdersContainer') 
@@ -620,36 +623,41 @@
 				
 			if (!container) return;
 
-			const items = container.children;
+			// Get all transaction items
+			const items = Array.from(container.querySelectorAll('.transaction-item'));
 			
-			Array.from(items).forEach(item => {
-				// skip empty state
-				if (item.classList.contains('text-center')) return;
-
+			// 1. Filter items
+			items.forEach(item => {
 				const orderNum = item.querySelector('h3')?.textContent.toLowerCase() || '';
 				const name = item.querySelector('.text-sm')?.textContent.toLowerCase() || '';
-				const isPaid = item.querySelector('.bg-green-600')?.textContent === 'Fully Paid';
-				
 				const matchesSearch = orderNum.includes(searchTerm) || name.includes(searchTerm);
 				
-				let matchesStatus = true;
-				if (statusFilter === 'unpaid') {
-					matchesStatus = !isPaid;
-				} else if (statusFilter === 'paid') {
-					matchesStatus = isPaid;
-				}
-
-				if (matchesSearch && matchesStatus) {
+				if (matchesSearch) {
 					item.classList.remove('hidden');
 				} else {
 					item.classList.add('hidden');
 				}
 			});
+
+			// 2. Sort items
+			const sortedItems = items.sort((a, b) => {
+				if (sortOrder === 'high-low') {
+					return parseFloat(b.dataset.amount) - parseFloat(a.dataset.amount);
+				} else if (sortOrder === 'low-high') {
+					return parseFloat(a.dataset.amount) - parseFloat(b.dataset.amount);
+				} else if (sortOrder === 'random') {
+					return parseInt(a.dataset.random) - parseInt(b.dataset.random);
+				}
+				return 0;
+			});
+
+			// 3. Re-append sorted items to container
+			sortedItems.forEach(item => container.appendChild(item));
 		}
 
 		// Attach listeners
 		document.getElementById('modalSearchInput').addEventListener('input', filterModalItems);
-		document.getElementById('modalStatusFilter').addEventListener('change', filterModalItems);
+		document.getElementById('modalSortFilter').addEventListener('change', filterModalItems);
 
 		// Transaction selection
 		function selectTransaction(reference, amount, date, type, orderId, remainingBalance = null) {
