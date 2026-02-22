@@ -1,23 +1,21 @@
-@use('App\Models\SalesOrder')
 @php
     $isArchive = $isArchive ?? false;
     $rowTextColor = $isArchive ? 'text-gray-700' : 'text-slate-300';
-    $rowHoverClass = $isArchive ? 'hover:bg-white/90' : 'hover:bg-slate-600';
 @endphp
-<tr class="{{ $rowHoverClass }} transition cursor-pointer data-row" 
+<tr class="border-b border-slate-600 hover:bg-slate-700/50 transition-colors duration-200 cursor-pointer data-row" 
     data-order-id="{{ $order->id }}" 
     data-status="{{ $order->status }}" 
     data-payment="{{ $order->payment_status }}"
     data-order-date="{{ \Illuminate\Support\Carbon::parse($order->order_date)->format('Y-m-d') }}"
     data-completed-date="{{ $order->updated_at->format('Y-m-d') }}"
     @if($isArchive) style="background-color: rgba(255,255,255,0.7);" @endif>
-    <td class="px-3 py-3 font-mono {{ $rowTextColor }}">{{ $order->order_number }}</td>
-    <td class="px-3 py-3">
+    <td class="px-4 py-3 font-mono {{ $rowTextColor }}">{{ $order->order_number }}</td>
+    <td class="px-4 py-3">
         <div class="font-medium {{ $rowTextColor }}">{{ $order->customer?->name }}</div>
         @php $ct = $order->customer?->customer_type; $ctBg = $customerTypeBg[$ct] ?? '#e5e7eb'; @endphp
         <span class="mt-1 inline-block text-[10px] font-bold text-white px-2 py-0.5 rounded shadow-sm" style="background: {{ $ctBg }};">{{ strtoupper($ct) }}</span>
     </td>
-    <td class="px-3 py-3 {{ $rowTextColor }}">{{ \Illuminate\Support\Carbon::parse($order->order_date)->format('M d, Y') }}</td>
+    <td class="px-4 py-3 {{ $rowTextColor }}">{{ \Illuminate\Support\Carbon::parse($order->order_date)->format('M d, Y') }}</td>
     @php
         $delivery = \Illuminate\Support\Carbon::parse($order->delivery_date);
         $due = $order->due_date ? \Illuminate\Support\Carbon::parse($order->due_date) : $delivery;
@@ -27,7 +25,7 @@
         $diff = $due->diffInDays($today);
     @endphp
     @if(!$isArchive)
-    <td class="px-3 py-3 font-medium">
+    <td class="px-4 py-3 font-medium">
         @if ($isDueToday)
             <span class="text-xs text-red-400">Due Today</span>
         @elseif ($isOverdue)
@@ -38,10 +36,10 @@
         @endif
     </td>
     @endif
-    <td class="px-3 py-3 {{ $rowTextColor }} text-center">
+    <td class="px-4 py-3 {{ $rowTextColor }} text-center">
         {{ $isArchive ? $order->updated_at->format('M d, Y') : $delivery->format('M d, Y') }}
     </td>
-    <td class="px-3 py-3">
+    <td class="px-4 py-3">
         @php
         $statusColors = [
             'Pending' => $isArchive ? 'text-slate-500' : 'text-slate-400',
@@ -57,8 +55,8 @@
     </td>
 
 
-    <td class="px-3 py-3 font-bold {{ $rowTextColor }}">₱{{ number_format($order->total_amount, 2) }}</td>
-    <td class="px-3 py-3">
+    <td class="px-4 py-3 font-bold {{ $rowTextColor }}">₱{{ number_format($order->total_amount, 2) }}</td>
+    <td class="px-4 py-3">
         @if($order->payment_status === 'Paid')
         <span class="text-xs font-bold text-green-600">{{ $order->payment_status }}</span>
         @elseif($order->payment_status === 'Partial')
@@ -67,8 +65,8 @@
         <span class="text-xs font-bold text-slate-500">{{ $order->payment_status }}</span>
         @endif
     </td>
-    <td class="px-3 py-3">
-        <div class="flex space-x-2 items-center justify-center">
+    <td class="px-4 py-3">
+        <div class="flex space-x-2 items-center justify-start">
             <button onclick="openModal('viewOrderModal-{{ $order->id }}')" class="p-1.5 {{ $isArchive ? 'hover:bg-gray-200 text-gray-600' : 'hover:bg-slate-500 text-white' }} rounded-lg transition-all" title="View">
                 <svg class="w-4 h-4" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" stroke-width="3" stroke="currentColor" fill="none">
                     <path d="M53.79,33.1a.51.51,0,0,0,0-.4C52.83,30.89,45.29,17.17,32,16.84S11,30.61,9.92,32.65a.48.48,0,0,0,0,.48C11.1,35.06,19.35,48.05,29.68,49,41.07,50,50.31,42,53.79,33.1Z"/>
