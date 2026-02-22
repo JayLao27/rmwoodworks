@@ -259,19 +259,19 @@ $paymentBg = [
 
 
 			<!-- Sales Orders Table -->
-			<div id="salesTable" class="w-full overflow-y-auto custom-scrollbar" style="max-height: 65vh;">
-				<table class="w-full border-collapse text-left text-xs text-white">
-					<thead class="bg-slate-800 text-slate-300 sticky top-0">
-						<tr>
-							<th class="px-3 py-3 font-medium">Order #</th>
-							<th class="px-3 py-3 font-medium">Customer</th>
-							<th class="px-3 py-3 font-medium">Order Date</th>
-							<th class="px-3 py-3 font-medium">Due Date</th>
-							<th class="px-3 py-3 font-medium">Delivery Date</th>
-							<th class="px-3 py-3 font-medium">Production Status</th>
-							<th class="px-3 py-3 font-medium text-center">Total Amount</th>
-							<th class="px-3 py-3 font-medium">Payment Status</th>
-							<th class="px-3 py-3 font-medium">Action</th>
+			<div id="salesTable" class="w-full overflow-y-auto custom-scrollbar rounded-xl border border-slate-600" style="max-height: 65vh;">
+				<table class="w-full table-fixed border-collapse text-left text-xs text-white">
+					<thead >
+						<tr class="bg-slate-700 text-slate-300 border-b border-slate-600 sticky top-0 z-10">
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Order #</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Customer</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Order Date</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Due Date</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Delivery Date</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Production Status</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-center">Total Amount</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Payment Status</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Action</th>
 						</tr>
 					</thead>
 					<tbody id="salesTbody" class="divide-y divide-slate-600">
@@ -290,17 +290,17 @@ $paymentBg = [
 			</div>
 
 			<!-- Customers Table -->
-			<div id="customerTable" class="hidden w-full overflow-y-auto custom-scrollbar" style="max-height: 65vh;">
-				<table class="w-full border-collapse text-left text-xs text-white">
-					<thead class="bg-slate-800 text-slate-300 sticky top-0">
-						<tr>
-							<th class="px-3 py-3 font-medium rounded-tl-xl">Name</th>
-							<th class="px-3 py-3 font-medium">Type</th>
-							<th class="px-3 py-3 font-medium">Contact</th>
-							<th class="px-3 py-3 font-medium">Email</th>
-							<th class="px-3 py-3 font-medium">Total Orders</th>
-							<th class="px-3 py-3 font-medium">Total Spent</th>
-							<th class="px-3 py-3 font-medium text-center rounded-tr-xl">Action</th>
+			<div id="customerTable" class="hidden w-full overflow-y-auto custom-scrollbar rounded-xl border border-slate-600" style="max-height: 65vh;">
+				<table class="w-full table-fixed border-collapse text-left text-xs text-white">
+					<thead >
+						<tr class="bg-slate-700 text-slate-300 border-b border-slate-600 sticky top-0 z-10">
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider rounded-tl-xl">Name</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Type</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Contact</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Email</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Total Orders</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Total Spent</th>
+							<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-center rounded-tr-xl">Action</th>
 						</tr>
 					</thead>
 					<tbody id="customersTbody" class="divide-y divide-slate-600">
