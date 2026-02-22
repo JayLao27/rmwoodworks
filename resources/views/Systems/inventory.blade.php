@@ -318,13 +318,16 @@
                                 
                                 <div>
                                     <label class="block text-sm font-bold text-gray-900 mb-3">Category *</label>
-                                    <select name="category" class="w-full border-2 border-gray-300 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm transition-all" required>
-                                        <option value="">Select Category</option>
-                                        <option value="lumber">Lumber</option>
-                                        <option value="hardware">Hardware</option>
-                                        <option value="finishing">Finishing</option>
-                                        <option value="tools">Tools</option>
-                                    </select>
+                                    <div class="grid grid-cols-2 gap-2" id="materialCategoryButtons">
+                                        @foreach(['lumber', 'hardware', 'finishing', 'tools'] as $cat)
+                                            <button type="button" 
+                                                onclick="selectMaterialCategory(this, '{{ $cat }}')"
+                                                class="category-btn px-3 py-2 border-2 border-gray-300 rounded-xl text-xs font-bold text-gray-600 hover:border-amber-500 hover:bg-amber-50 transition-all capitalize">
+                                                {{ $cat }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                    <input type="hidden" name="category" id="selectedMaterialCategory" required>
                                 </div>
                                 
                                 <div>
@@ -347,14 +350,32 @@
                                     <input type="number" name="unit_cost" step="0.01" min="0" class="w-full border-2 border-gray-300 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm transition-all" required>
                                 </div>
                                 
-                                <div>
+                                <div class="md:col-span-2">
                                     <label class="block text-sm font-bold text-gray-900 mb-3">Supplier *</label>
-                                    <select name="supplier_id" class="w-full border-2 border-gray-300 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm transition-all" required>
-                                        <option value="">Select Supplier</option>
-                                        @foreach($suppliers ?? [] as $supplier)
-                                            <option value="{{ $supplier->id }}">{{ $supplier->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="bg-white/50 border-2 border-gray-300 rounded-2xl p-4 shadow-inner">
+                                        <div class="relative mb-3">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                                </svg>
+                                            </div>
+                                            <input type="text" id="supplierSearchInput" placeholder="Search supplier..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm outline-none transition-all">
+                                        </div>
+                                        <div id="supplierButtonsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                            @foreach($suppliers ?? [] as $supplier)
+                                                <button type="button" 
+                                                    onclick="selectSupplier(this, {{ $supplier->id }})"
+                                                    data-supplier-name="{{ strtolower($supplier->name) }}"
+                                                    class="supplier-btn group p-3 bg-white border-2 border-gray-200 rounded-xl cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition-all shadow-sm text-left">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-amber-500 transition-colors"></div>
+                                                        <span class="text-xs font-bold text-gray-700">{{ $supplier->name }}</span>
+                                                    </div>
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                        <input type="hidden" name="supplier_id" id="selectedMaterialSupplierId" required>
+                                    </div>
                                 </div>
                                 
                                 <div class="md:col-span-2">
@@ -406,7 +427,16 @@
                                 
                                 <div>
                                     <label class="block text-sm font-bold text-gray-900 mb-3">Category *</label>
-                                    <input type="text" name="category" value="Products" class="w-full border-2 border-gray-300 rounded-xl px-3 py-1.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm transition-all" required>
+                                    <div class="grid grid-cols-2 gap-2" id="productCategoryButtons">
+                                        @foreach(['Products', 'Custom', 'Furniture', 'Others'] as $cat)
+                                            <button type="button" 
+                                                onclick="selectProductCategory(this, '{{ $cat }}')"
+                                                class="prod-category-btn px-3 py-2 border-2 border-gray-300 rounded-xl text-xs font-bold text-gray-600 hover:border-amber-500 hover:bg-amber-50 transition-all capitalize {{ $cat === 'Products' ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-500/20' : '' }}">
+                                                {{ $cat }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                    <input type="hidden" name="category" id="selectedProductCategory" value="Products" required>
                                 </div>
                                 
                                 <div>
@@ -981,7 +1011,70 @@
             function closeAddItemModal() {
                 document.getElementById('addItemModal').classList.add('hidden');
                 document.getElementById('addItemForm').reset();
+                // Clear selection states
+                document.querySelectorAll('#materialCategoryButtons .category-btn').forEach(btn => {
+                    btn.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                    btn.classList.add('border-gray-300', 'text-gray-600');
+                });
+                document.getElementById('selectedMaterialCategory').value = '';
+                document.querySelectorAll('#supplierButtonsContainer .supplier-btn').forEach(btn => {
+                    btn.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                    btn.classList.add('border-gray-200');
+                    btn.querySelector('div div').classList.remove('bg-amber-500');
+                    btn.querySelector('div div').classList.add('bg-slate-300');
+                });
+                document.getElementById('selectedMaterialSupplierId').value = '';
+                if(document.getElementById('supplierSearchInput')) document.getElementById('supplierSearchInput').value = '';
+                document.querySelectorAll('.supplier-btn').forEach(btn => btn.classList.remove('hidden'));
             }
+
+            function selectMaterialCategory(btn, category) {
+                document.querySelectorAll('#materialCategoryButtons .category-btn').forEach(b => {
+                    b.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                    b.classList.add('border-gray-300', 'text-gray-600');
+                });
+                btn.classList.remove('border-gray-300', 'text-gray-600');
+                btn.classList.add('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                document.getElementById('selectedMaterialCategory').value = category;
+            }
+
+            function selectSupplier(btn, supplierId) {
+                document.querySelectorAll('#supplierButtonsContainer .supplier-btn').forEach(b => {
+                    b.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                    b.classList.add('border-gray-200');
+                    b.querySelector('div div').classList.remove('bg-amber-500');
+                    b.querySelector('div div').classList.add('bg-slate-300');
+                });
+                btn.classList.remove('border-gray-200');
+                btn.classList.add('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                btn.querySelector('div div').classList.remove('bg-slate-300');
+                btn.querySelector('div div').classList.add('bg-amber-500');
+                document.getElementById('selectedMaterialSupplierId').value = supplierId;
+            }
+
+            function selectProductCategory(btn, category) {
+                document.querySelectorAll('#productCategoryButtons .prod-category-btn').forEach(b => {
+                    b.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                    b.classList.add('border-gray-300', 'text-gray-600');
+                });
+                btn.classList.remove('border-gray-300', 'text-gray-600');
+                btn.classList.add('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                document.getElementById('selectedProductCategory').value = category;
+            }
+
+            // Supplier Search
+            document.addEventListener('DOMContentLoaded', function() {
+                const supplierSearch = document.getElementById('supplierSearchInput');
+                if (supplierSearch) {
+                    supplierSearch.addEventListener('input', function() {
+                        const term = this.value.toLowerCase();
+                        document.querySelectorAll('.supplier-btn').forEach(btn => {
+                            const name = btn.dataset.supplierName;
+                            btn.classList.toggle('hidden', !name.includes(term));
+                        });
+                    });
+                }
+            });
 
             function openAddProductModal() {
                 document.getElementById('addProductModal').classList.remove('hidden');
