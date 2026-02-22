@@ -67,13 +67,15 @@ class InventoryController extends Controller
                 'production_cost' => $request->production_cost,
             ]);
 
-            // Attach materials to product if provided
+            // Sync materials to product if provided
             if ($request->has('materials') && is_array($request->materials)) {
-                foreach ($request->materials as $material) {
-                    $item->materials()->attach($material['material_id'], [
-                        'quantity_needed' => $material['quantity_needed']
-                    ]);
-                }
+                $materials = collect($request->materials)
+                    ->filter(fn($m) => !empty($m['material_id']))
+                    ->groupBy('material_id')
+                    ->map(fn($group) => ['quantity_needed' => $group->sum('quantity_needed')])
+                    ->toArray();
+                
+                $item->materials()->sync($materials);
             }
         } else {
             $item = Material::create([
@@ -164,18 +166,16 @@ class InventoryController extends Controller
             ]);
 
             // Update materials
+            // Sync materials
             if ($request->has('materials') && is_array($request->materials)) {
-                // Detach all existing materials
-                $item->materials()->detach();
+                $materials = collect($request->materials)
+                    ->filter(fn($m) => !empty($m['material_id']))
+                    ->groupBy('material_id')
+                    ->map(fn($group) => ['quantity_needed' => $group->sum('quantity_needed')])
+                    ->toArray();
                 
-                // Attach new materials
-                foreach ($request->materials as $material) {
-                    $item->materials()->attach($material['material_id'], [
-                        'quantity_needed' => $material['quantity_needed']
-                    ]);
-                }
+                $item->materials()->sync($materials);
             } else {
-                // If no materials provided, detach all
                 $item->materials()->detach();
             }
         } else {
