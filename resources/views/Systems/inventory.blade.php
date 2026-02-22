@@ -519,7 +519,7 @@
                     <!-- Header -->
                     <div class="flex justify-between items-start mb-5 border-b-2 pb-6" style="border-color: #374151;">
                         <div>
-                            <h3 class="text-xl font-bold" style="color: #374151;">Item Details & Materials Neededy</h3>
+                            <h3 class="text-xl font-bold" style="color: #374151;">Item Details & Materials Needed</h3>
                             <p id="itemName" class="text-sm mt-1.5 font-medium" style="color: #666;"></p>
                         </div>
                         <button onclick="closeStockModal()" class="text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-xl p-2 transition-all duration-200">
@@ -553,8 +553,8 @@
                             <span class="w-1 h-6 rounded mr-3" style="background-color: #374151;"></span>
                             Materials Needed
                         </h4>
-                        <div class="rounded-xl shadow-lg" style="border: 2px solid #374151; background: rgba(255,255,255,0.8);">
-                            <div id="productMaterialsList" class="divide-y" style="border-color: #374151;">
+                        <div class="rounded-xl shadow-lg overflow-hidden" style="border: 2px solid #374151; background: rgba(255,255,255,0.8);">
+                            <div id="productMaterialsList" class="divide-y max-h-[300px] overflow-y-auto custom-scrollbar" style="border-color: #374151;">
                                 <div class="px-6 py-8 text-center font-medium" style="color: #666;">
                                     Loading materials...
                                 </div>
@@ -568,9 +568,9 @@
                             <span class="w-1 h-6 rounded mr-3" style="background-color: #374151;"></span>
                             Movement History
                         </h4>
-                        <div class="overflow-x-auto rounded-xl shadow-lg" style="border: 2px solid #374151; background: rgba(255,255,255,0.8);">
+                        <div class="overflow-x-auto rounded-xl shadow-lg max-h-[300px] overflow-y-auto custom-scrollbar" style="border: 2px solid #374151; background: rgba(255,255,255,0.8);">
                             <table class="w-full text-sm">
-                                <thead style="background-color: #374151;" class="text-white">
+                                <thead style="background-color: #374151;" class="text-white sticky top-0">
                                     <tr>
                                         <th class="px-6 py-4 text-left font-bold">Date</th>
                                         <th class="px-6 py-4 text-left font-bold">Type</th>
