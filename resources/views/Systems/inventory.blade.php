@@ -11,11 +11,19 @@
 				<p class="text-xs font-medium text-gray-600 mt-2">Track and manage raw materials and finished products</p>
 			</div>
 			<div class="flex space-x-3">
-				<button onclick="openReceiveStockModal()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 font-medium text-sm">
+				@php
+					$pendingReceiveCount = \App\Models\PurchaseOrder::where('status', '!=', 'received')->count();
+				@endphp
+				<button onclick="openReceiveStockModal()" class="relative px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 font-medium text-sm">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
 					</svg>
 					Receive Stock
+					@if($pendingReceiveCount > 0)
+						<span class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm flex items-center justify-center min-w-[20px] h-5">
+							{{ $pendingReceiveCount }}
+						</span>
+					@endif
 				</button>
 				<button onclick="openStockLogsModal()" class="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 font-medium text-sm">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -627,6 +635,9 @@
                     <div class="p-5 overflow-y-auto custom-scrollbar" style="max-height: calc(90vh - 85px);">
                         <!-- Quick Filters -->
                         <div class="mb-4 flex flex-wrap gap-2">
+                             <button type="button" onclick="setQuickFilter('today')" class="px-3 py-1.5 text-xs font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 hover:text-amber-800 rounded-lg transition-all border border-amber-200">
+                                Today
+                            </button>
                              <button type="button" onclick="setQuickFilter('yesterday')" class="px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-800 rounded-lg transition-all border border-gray-200">
                                 Yesterday
                             </button>
@@ -2005,6 +2016,9 @@
                 let toDate = new Date();
 
                 switch(period) {
+                    case 'today':
+                        // fromDate and toDate already initialized to today
+                        break;
                     case 'yesterday':
                         fromDate.setDate(today.getDate() - 1);
                         toDate.setDate(today.getDate() - 1);
