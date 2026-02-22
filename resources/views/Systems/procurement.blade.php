@@ -808,49 +808,45 @@
     </div>
 
     <!-- View Order Items Modal -->
-    <div id="viewOrderItemsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" onclick="if(event.target === this) closeViewOrderItemsModal()">
-        <div class="bg-amber-50 rounded-xl shadow-2xl max-w-4xl w-full mx-auto my-8 p-0 overflow-hidden border-2 border-slate-700 max-h-[90vh] overflow-y-auto">
+    <div id="viewOrderItemsModal" class="fixed inset-0 bg-black/70 hidden overflow-y-auto" style="z-index: 99999; cursor: default;" onclick="if(event.target === this) closeViewOrderItemsModal()">
+        <div class="rounded-lg shadow-2xl max-w-4xl w-[95%] mx-auto my-8 p-5" style="background-color: #FFF1DA;" onclick="event.stopPropagation()">
             <!-- Header -->
-            <div class="sticky top-0 bg-gradient-to-r from-slate-700 to-slate-800 p-4 text-white z-10 flex items-center justify-between">
+            <div class="flex items-center justify-between mb-5 border-b-2 pb-6" style="border-color: #374151;">
                 <div>
-                    <h3 class="text-xl font-bold flex items-center gap-2" id="viewOrderHeaderNumber">
+                    <h3 class="text-xl font-bold flex items-center gap-2" id="viewOrderHeaderNumber" style="color: #374151;">
                         Order #-
                     </h3>
-                    <p class="text-slate-300 text-xs mt-0.5" id="viewOrderHeaderSupplier">-</p>
+                    <p class="mt-1" id="viewOrderHeaderSupplier" style="color: #666;">-</p>
                 </div>
-                <button class="text-white hover:text-slate-200 bg-white/10 hover:bg-white/20 rounded-lg p-2 transition-all" onclick="closeViewOrderItemsModal()">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
+                <button class="text-xl transition" style="color: #999;" onclick="closeViewOrderItemsModal()">✕</button>
             </div>
 
             <!-- Content -->
-            <div class="p-6">
+            <div class="p-0">
                 <!-- Order Information Cards -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div class="p-4 rounded-xl border-l-4 border-slate-700 env-card-bg shadow-sm">
+                    <div class="p-3 rounded-lg border-l-4 shadow-sm" style="background-color: rgba(255,255,255,0.7); border-left-color: #374151;">
                         <p class="text-xs font-bold text-gray-500 uppercase">Order Number</p>
                         <p class="text-lg font-bold mt-1 text-gray-900" id="viewOrderDetailNumber">-</p>
                     </div>
-                    <div class="p-4 rounded-xl border-l-4 border-slate-700 env-card-bg shadow-sm">
+                    <div class="p-3 rounded-lg border-l-4 shadow-sm" style="background-color: rgba(255,255,255,0.7); border-left-color: #374151;">
                         <p class="text-xs font-bold text-gray-500 uppercase">Supplier</p>
                         <p class="text-lg font-bold mt-1 text-gray-900" id="viewOrderDetailSupplier">-</p>
                     </div>
-                    <div class="p-4 rounded-xl border-l-4 border-slate-700 env-card-bg shadow-sm">
+                    <div class="p-3 rounded-lg border-l-4 shadow-sm" style="background-color: rgba(255,255,255,0.7); border-left-color: #374151;">
                         <p class="text-xs font-bold text-gray-500 uppercase">Total Items</p>
                         <p class="text-lg font-bold mt-1 text-gray-900" id="viewOrderTotalItems">0</p>
                     </div>
-                    <div class="p-4 rounded-xl border-l-4 border-green-600 env-card-bg shadow-sm bg-green-50">
-                        <p class="text-xs font-bold text-gray-500 uppercase">Order Total</p>
+                    <div class="p-3 rounded-lg border-l-4 shadow-sm" style="background-color: rgba(255,255,255,0.7); border-left-color: #10B981;">
+                        <p class="text-xs font-bold text-green-600 uppercase">Order Total</p>
                         <p class="text-lg font-bold mt-1 text-green-700" id="viewOrderTotalAmount">₱0.00</p>
                     </div>
                 </div>
 
                 <!-- Items Section -->
                 <div class="mb-2">
-                    <h4 class="text-lg font-bold mb-4 flex items-center text-gray-800">
-                        <span class="w-1.5 h-6 bg-amber-500 rounded mr-2"></span>
+                    <h4 class="text-xl font-bold mb-4 flex items-center" style="color: #374151;">
+                        <span class="w-1 h-6 rounded mr-3" style="background-color: #374151;"></span>
                         Materials & Items Ordered
                     </h4>
                     <div id="viewOrderItemsContainer" class="space-y-3">
@@ -862,8 +858,8 @@
             </div>
 
             <!-- Footer -->
-            <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-end">
-                <button class="px-6 py-2 rounded-xl font-bold transition text-white bg-slate-700 hover:bg-slate-800 shadow-lg" onclick="closeViewOrderItemsModal()">Close Details</button>
+            <div class="flex justify-end mt-6">
+                <button class="px-6 py-3 rounded-lg font-semibold transition text-white" style="background-color: #374151;" onclick="closeViewOrderItemsModal()">Close Details</button>
             </div>
         </div>
     </div>
@@ -1075,24 +1071,23 @@
     </div>
 
     <!-- Improved Received Stock Reports Modal -->
-    <div id="receivedStockReportsModal" class="fixed inset-0 bg-black/60 hidden z-50 backdrop-blur-sm transition-opacity duration-300 flex items-center justify-center p-4">
-        <div class="bg-amber-50 rounded-xl max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl border-2 border-slate-700 flex flex-col modal-content">
-            
+    <div id="receivedStockReportsModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-[99999]" style="cursor: default;" onclick="if(event.target === this) closeReceivedStockReportsModal()">
+        <div class="rounded-xl shadow-2xl max-w-5xl w-full mx-auto my-8 p-0 overflow-hidden border-2 border-slate-700 max-h-[90vh] flex flex-col" style="background-color: #FFF1DA;" onclick="event.stopPropagation()">
             <!-- Modal Header -->
-            <div class="bg-gradient-to-r from-slate-700 to-slate-800 p-4 text-white flex justify-between items-center shrink-0">
+            <div class="flex items-center justify-between p-5 border-b-2 shrink-0" style="border-color: #374151;">
                 <div class="flex items-center gap-3">
-                    <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
-                        <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-2 rounded-lg" style="background-color: rgba(55, 65, 81, 0.1);">
+                        <svg class="w-6 h-6" style="color: #374151;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold">Procurement Reports</h3>
-                        <p class="text-slate-300 text-xs mt-0.5">Track and manage incoming inventory</p>
+                        <h3 class="text-xl font-bold" style="color: #374151;">Procurement Reports</h3>
+                        <p class="text-xs mt-0.5" style="color: #666;">Track and manage incoming inventory</p>
                     </div>
                 </div>
-                <button onclick="closeReceivedStockReportsModal()" class="text-white hover:text-slate-200 bg-white/10 hover:bg-white/20 rounded-lg p-2 transition-all">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button onclick="closeReceivedStockReportsModal()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-xl p-2 transition-all">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
@@ -1139,24 +1134,28 @@
                     </div>
                 </div>
 
-                <!-- Summary Cards (Simplified) -->
-                <div class="px-5 pb-3 grid grid-cols-2 gap-4">
-                    <div class="bg-white/60 p-3 rounded-xl border border-amber-200 flex justify-between items-center">
+                <!-- Summary Cards -->
+                <div class="px-5 pb-4 grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-lg border-l-4 shadow-sm flex justify-between items-center" style="background-color: rgba(255,255,255,0.7); border-left-color: #374151;">
                         <div>
-                            <p class="text-[10px] uppercase font-bold text-amber-600">Total Received</p>
-                            <p id="totalReceived" class="text-lg font-bold text-gray-800">0</p>
+                            <p class="text-[10px] uppercase font-bold text-gray-500">Total Received</p>
+                            <p id="totalReceived" class="text-2xl font-bold mt-1" style="color: #374151;">0</p>
                         </div>
-                        <div class="bg-amber-100 p-2 rounded-full text-amber-600">
-                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                        <div class="p-2 rounded-lg shadow-inner" style="background-color: rgba(55, 65, 81, 0.05);">
+                             <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                             </svg>
                         </div>
                     </div>
-                    <div class="bg-white/60 p-3 rounded-xl border border-red-200 flex justify-between items-center">
+                    <div class="p-4 rounded-lg border-l-4 shadow-sm flex justify-between items-center" style="background-color: rgba(255,255,255,0.7); border-left-color: #EF4444;">
                         <div>
-                             <p class="text-[10px] uppercase font-bold text-red-600">Total Defects</p>
-                             <p id="totalDefects" class="text-lg font-bold text-gray-800">0</p>
+                             <p class="text-[10px] uppercase font-bold text-red-500">Total Defects</p>
+                             <p id="totalDefects" class="text-2xl font-bold mt-1 text-red-700">0</p>
                         </div>
-                        <div class="bg-red-100 p-2 rounded-full text-red-600">
-                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        <div class="p-2 rounded-lg shadow-inner" style="background-color: rgba(239, 68, 68, 0.05);">
+                             <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                             </svg>
                         </div>
                     </div>
                 </div>
@@ -1374,13 +1373,13 @@
             document.getElementById('viewOrderItemsModal').classList.remove('hidden');
 
             const itemsContainer = document.getElementById('viewOrderItemsContainer');
-            itemsContainer.innerHTML = '<div class="p-6 rounded-lg border text-center bg-white border-slate-300 text-slate-500">Loading items...</div>';
+            itemsContainer.innerHTML = '<div class="p-6 rounded-lg border text-center shadow-sm" style="background-color: rgba(255,255,255,0.7); border-color: #374151; color: #999;">Loading items...</div>';
 
             fetch(`/procurement/purchase-orders/${orderId}/items?include_received=1`)
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success || !data.items || data.items.length === 0) {
-                        itemsContainer.innerHTML = '<div class="p-6 rounded-lg border text-center bg-white border-slate-300 text-slate-500">No items found for this order.</div>';
+                        itemsContainer.innerHTML = '<div class="p-6 rounded-lg border text-center shadow-sm" style="background-color: rgba(255,255,255,0.7); border-color: #374151; color: #999;">No items found for this order.</div>';
                         return;
                     }
 
@@ -1414,30 +1413,30 @@
                         const ordered = Number(item.ordered_quantity || 0);
                         
                         return `
-                            <div class="p-5 rounded-lg border-l-4 hover:shadow-md transition bg-white border-slate-700 shadow-sm">
+                            <div class="p-5 rounded-lg border-l-4 hover:shadow-md transition shadow-sm" style="background-color: rgba(255,255,255,0.85); border-left-color: #374151;">
                                 <div class="flex justify-between items-start">
                                     <div class="flex-1">
-                                        <h5 class="font-bold text-lg text-gray-700">${item.material_name || 'Unknown Material'}</h5>
-                                        <p class="text-sm mt-1 text-gray-500">Unit Price: <span class="font-semibold text-gray-700">₱${Number(item.unit_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+                                        <h5 class="font-bold text-base" style="color: #374151;">${item.material_name || 'Unknown Material'}</h5>
+                                        <p class="text-xs mt-1" style="color: #666;">Unit Price: <span class="font-semibold" style="color: #374151;">₱${Number(item.unit_price || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
                                     </div>
                                     <div class="text-right">
-                                        <div class="inline-block px-4 py-2 rounded-full font-bold text-lg bg-amber-500 text-white shadow-sm">
-                                            ${Number(ordered).toFixed(2)} <span class="text-sm">units</span>
+                                        <div class="inline-block px-3 py-1.5 rounded-full font-bold text-base" style="background-color: #374151; color: #FFF1DA;">
+                                            ${Number(ordered).toFixed(2)} <span class="text-xs">units</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="mt-3 pt-3 grid grid-cols-3 gap-4 border-t border-slate-200">
+                                <div class="mt-3 pt-3 grid grid-cols-3 gap-4 border-t" style="border-top-color: #E8D5BF; color: #666;">
                                     <div>
-                                        <p class="text-xs font-semibold text-gray-500">Received</p>
-                                        <p class="text-sm font-bold text-gray-700">${Number(received).toFixed(2)}</p>
+                                        <p class="text-[10px] font-bold uppercase" style="color: #999;">Received</p>
+                                        <p class="text-sm font-bold" style="color: #374151;">${Number(received).toFixed(2)}</p>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-semibold text-gray-500">Remaining</p>
-                                        <p class="text-sm font-bold text-gray-700">${Number(ordered - received).toFixed(2)}</p>
+                                        <p class="text-[10px] font-bold uppercase" style="color: #999;">Remaining</p>
+                                        <p class="text-sm font-bold" style="color: #374151;">${Number(ordered - received).toFixed(2)}</p>
                                     </div>
                                     <div class="text-right">
-                                        <p class="text-xs font-semibold text-gray-500">Line Total</p>
-                                        <p class="text-sm font-bold text-green-700">₱${Number(lineTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                        <p class="text-[10px] font-bold uppercase" style="color: #999;">Line Total</p>
+                                        <p class="text-base font-bold" style="color: #10B981;">₱${Number(lineTotal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                     </div>
                                 </div>
                             </div>
@@ -1449,7 +1448,7 @@
                     itemsContainer.innerHTML = itemsHTML;
                 })
                 .catch(() => {
-                    itemsContainer.innerHTML = '<div class="p-6 rounded-lg border text-center bg-white border-red-300 text-red-500">Failed to load items for this order.</div>';
+                    itemsContainer.innerHTML = '<div class="p-6 rounded-lg border text-center shadow-sm" style="background-color: rgba(255,255,255,0.7); border-color: #374151; color: #EF4444;">Failed to load items for this order.</div>';
                 });
         }
 
