@@ -77,6 +77,7 @@ class InventoryController extends Controller
                 
                 $item->materials()->sync($materials);
             }
+            \App\Models\SystemActivity::log('Inventory', 'Product Created', "New product '{$item->product_name}' added to inventory.", 'indigo');
         } else {
             $item = Material::create([
                 'name' => $request->name,
@@ -87,6 +88,7 @@ class InventoryController extends Controller
                 'unit_cost' => $request->unit_cost,
                 'supplier_id' => $request->supplier_id
             ]);
+            \App\Models\SystemActivity::log('Inventory', 'Material Created', "New material '{$item->name}' added to inventory.", 'amber');
         }
 
         // Create initial inventory movement only for materials
@@ -178,6 +180,7 @@ class InventoryController extends Controller
             } else {
                 $item->materials()->detach();
             }
+            \App\Models\SystemActivity::log('Inventory', 'Product Updated', "Product '{$item->product_name}' details updated.", 'indigo');
         } else {
             $item = Material::findOrFail($id);
             $item->update([
@@ -189,6 +192,7 @@ class InventoryController extends Controller
                 'unit_cost' => $request->unit_cost,
                 'supplier_id' => $request->supplier_id
             ]);
+            \App\Models\SystemActivity::log('Inventory', 'Material Updated', "Material '{$item->name}' details updated.", 'amber');
         }
 
         $itemType = $request->type === 'product' ? 'Product' : 'Material';
@@ -218,10 +222,12 @@ class InventoryController extends Controller
             $item = Material::findOrFail($id);
         }
 
+        $itemData = $type === 'material' ? $item->name : $item->product_name;
         $item->delete();
 
         // Clear cache
         \App\Services\CacheService::clearRelated($type);
+        \App\Models\SystemActivity::log('Inventory', ucfirst($type) . ' Deleted', "{$type} '{$itemData}' removed from system.", 'red');
 
         $itemType = $type === 'product' ? 'Product' : 'Material';
         return redirect()->route('inventory')->with('success', $itemType . ' deleted successfully!');
@@ -313,6 +319,9 @@ class InventoryController extends Controller
                 $item->update(['current_stock' => $request->quantity]);
             }
         });
+
+        $itemName = $request->type === 'material' ? $item->name : $item->product_name;
+        \App\Models\SystemActivity::log('Inventory', 'Stock Adjusted', "Manual stock adjustment for '{$itemName}': {$request->quantity} units.", 'orange');
 
         return redirect()->route('inventory')->with('success', 'Stock adjusted successfully!');
     }

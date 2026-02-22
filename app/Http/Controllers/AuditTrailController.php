@@ -119,11 +119,28 @@ class AuditTrailController extends Controller
                 ];
             });
 
+        $systemActivities = $filterDates(\App\Models\SystemActivity::with(['user'])->latest())
+            ->limit($limit)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'type' => $item->type,
+                    'action' => $item->action,
+                    'description' => $item->description,
+                    'user' => $item->user->name ?? 'System',
+                    'user_role' => $item->user->role ?? 'system',
+                    'date' => $item->created_at,
+                    'status' => 'Logged',
+                    'color' => $item->color ?? 'slate'
+                ];
+            });
+
         // Combine and sort by date desc
         $allActivities = $inventory->concat($sales)
             ->concat($accounting)
             ->concat($production)
             ->concat($procurement)
+            ->concat($systemActivities)
             ->sortByDesc('date');
 
         // Get unique roles for filtering (excluding admin)

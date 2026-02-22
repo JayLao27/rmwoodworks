@@ -2047,8 +2047,8 @@
                 receiveStockForm.addEventListener('submit', function (e) {
                     e.preventDefault();
 
-                    const purchaseOrderSelect = document.getElementById('purchaseOrderSelect');
-                    const purchaseOrderId = purchaseOrderSelect ? purchaseOrderSelect.value : null;
+                    const purchaseOrderInput = document.getElementById('selectedPurchaseOrderId');
+                    const purchaseOrderId = purchaseOrderInput ? purchaseOrderInput.value : null;
 
                     if (!purchaseOrderId) {
                         showErrorNotification('Please select a purchase order first.');

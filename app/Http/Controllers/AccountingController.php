@@ -349,6 +349,8 @@ class AccountingController extends Controller
             $purchaseOrder->update(['payment_status' => $paymentStatus]);
         }
 
+        \App\Models\SystemActivity::log('Accounting', 'Transaction Logged', "{$request->transaction_type} of ₱" . number_format($request->amount, 2) . " logged for reference {$request->reference}.", $request->transaction_type === 'Income' ? 'emerald' : 'red');
+
         return redirect()->route('accounting')->with('success', 'Transaction added successfully!');
     }
 

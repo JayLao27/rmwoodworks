@@ -14,8 +14,10 @@ class SalesOrderController extends Controller
     public function index()
     {
         // Use pagination instead of loading all
+        // Show orders that are 'Ready' and 'Paid' at the top
         $salesOrders = SalesOrder::with(['customer', 'items.product'])
             ->whereNotIn('status', ['Cancelled', 'Delivered'])
+            ->orderByRaw("CASE WHEN status = 'Ready' AND payment_status = 'Paid' THEN 0 ELSE 1 END")
             ->latest()
             ->paginate(20);
 
@@ -108,6 +110,7 @@ class SalesOrderController extends Controller
 
         if ($salesOrder) {
             $salesOrder->update(['total_amount' => $totalAmount]);
+            \App\Models\SystemActivity::log('Sales', 'Order Created', "New Sales Order {$salesOrder->order_number} created for {$salesOrder->customer->name}.", 'indigo');
         }
 
         if ($request->wantsJson()) {
@@ -214,6 +217,8 @@ class SalesOrderController extends Controller
             'user_id' => auth()->id(),
         ]);
 
+        \App\Models\SystemActivity::log('Sales', 'Order Updated', "Sales Order {$sales_order->order_number} details updated status: {$newStatus}.", 'indigo');
+
         if ($request->wantsJson()) {
             $sales_order->load(['customer', 'items.product']);
 
@@ -259,7 +264,10 @@ class SalesOrderController extends Controller
 public function RemoveCustomer($id)
     {
         $Customer = Customer::findOrFail($id);
+        $customerName = $Customer->name;
         $Customer->delete();
+
+        \App\Models\SystemActivity::log('Sales', 'Customer Deleted', "Customer '{$customerName}' removed from the system.", 'red');
 
         return redirect()->route('sales')->with('success', 'Customer deleted successfully!');
     }
@@ -267,6 +275,7 @@ public function RemoveCustomer($id)
     public function destroy(SalesOrder $sales_order)
     {
         $sales_order->update(['status' => 'Cancelled']);
+        \App\Models\SystemActivity::log('Sales', 'Order Cancelled', "Sales Order {$sales_order->order_number} was cancelled.", 'red');
         return redirect()->back()->with('success', 'Order has been moved to Archive.');
     }
 
@@ -280,6 +289,8 @@ public function RemoveCustomer($id)
         }
 
         $sales_order->update(['status' => 'Delivered']);
+
+        \App\Models\SystemActivity::log('Sales', 'Order Delivered', "Sales Order {$sales_order->order_number} has been delivered.", 'emerald');
 
         return response()->json([
             'success' => true,
