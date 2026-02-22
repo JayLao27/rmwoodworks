@@ -148,11 +148,20 @@
 								<p class="text-slate-300 text-xs font-medium mt-2">Track all income, expenses, and financial activities</p>
 							</div>
 							<div class="flex items-center gap-2">
-								<button onclick="openAddTransaction()" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-1.5 font-medium">
+								@php
+									$pendingTransactionsCount = $salesOrders->where('remaining_balance', '>', 0)->count() + 
+															   $purchaseOrders->where('remaining_balance', '>', 0)->count();
+								@endphp
+								<button onclick="openAddTransaction()" class="relative px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-1.5 font-medium">
 									<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
 										<path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
 									</svg>
 									<span>Add Transaction</span>
+									@if($pendingTransactionsCount > 0)
+										<span class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white shadow-sm flex items-center justify-center min-w-[20px] h-5">
+											{{ $pendingTransactionsCount }}
+										</span>
+									@endif
 								</button>
 							</div>
 						</div>
@@ -528,6 +537,9 @@
 				</svg>
 				Yes, Confirm
 			</button>
+		</div>
+	</div>
+</div>
 
 	<script>
 		let maxPaymentAmount = 0;
@@ -548,7 +560,9 @@
 				const rowDescription = row.getAttribute('data-description').toLowerCase();
 				
 				const categoryMatch = categoryFilter === 'all' || rowType === categoryFilter;
-				const statusMatch = statusFilter === 'all' || rowStatus === statusFilter;
+				const statusMatch = statusFilter === 'all' || 
+									rowStatus === statusFilter || 
+									(statusFilter === 'unpaid' && rowStatus === 'pending');
 				const searchMatch = searchInput === '' || 
 					rowId.includes(searchInput) ||
 					rowDate.includes(searchInput) ||
