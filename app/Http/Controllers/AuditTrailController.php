@@ -43,15 +43,23 @@ class AuditTrailController extends Controller
             ->limit($limit)
             ->get()
             ->map(function ($item) {
+                $action = $item->movement_type === 'in' ? 'Stock In' : 'Stock Out';
+                $color = $item->movement_type === 'in' ? 'emerald' : 'orange';
+
+                // If it's a production completion, call it "Completed"
+                if ($item->movement_type === 'in' && str_contains($item->reference_type ?? '', 'WorkOrder')) {
+                    $action = 'Completed';
+                }
+
                 return [
                     'type' => 'Inventory',
-                    'action' => $item->movement_type === 'in' ? 'Stock In' : 'Stock Out',
-                    'description' => ($item->item->name ?? 'Unknown Item') . ' (' . $item->quantity . ') - ' . $item->notes,
+                    'action' => $action,
+                    'description' => ($item->item->name ?? $item->item->product_name ?? 'Unknown Item') . ' (' . $item->quantity . ') - ' . $item->notes,
                     'user' => $item->user->name ?? 'System',
                     'user_role' => $item->user->role ?? 'system',
                     'date' => $item->created_at,
                     'status' => $item->status,
-                    'color' => $item->movement_type === 'in' ? 'emerald' : 'orange'
+                    'color' => $color
                 ];
             });
 
