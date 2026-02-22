@@ -266,9 +266,9 @@
 
 				<!-- Purchase Orders Table -->
 				<div id="purchase-orders-table" class="overflow-x-auto rounded-xl border border-slate-600 custom-scrollbar" style="max-height: 60vh;">
-					<table class="w-full text-left border-collapse">
+					<table class="w-full table-fixed text-left border-collapse">
 						<thead >
-							<tr class="bg-slate-700/50 text-slate-300 border-b border-slate-600 sticky top-0 z-10">
+							<tr class="bg-slate-700 text-slate-300 border-b border-slate-600 sticky top-0 z-10">
 								<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Order #</th>
 								<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Supplier</th>
 								<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider">Order Date</th>
@@ -296,7 +296,7 @@
 									@endif
 								</td>
 								<td class="py-3 px-4">
-									<div class="flex space-x-2">
+									<div class="flex space-x-2 justify-start">
 										<button onclick="event.stopPropagation(); openViewOrderModal({{ $order->id }})" class="p-1 hover:bg-slate-500 rounded text-slate-400 hover:text-white transition-colors" title="View Items">
 											<svg class="w-4 h-4" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" stroke-width="3" stroke="currentColor" fill="none">
                                                 <path d="M53.79,33.1a.51.51,0,0,0,0-.4C52.83,30.89,45.29,17.17,32,16.84S11,30.61,9.92,32.65a.48.48,0,0,0,0,.48C11.1,35.06,19.35,48.05,29.68,49,41.07,50,50.31,42,53.79,33.1Z"/>
@@ -308,11 +308,13 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                         </svg>
 										</button>
+										@if($order->payment_status !== 'Paid' && $order->payment_status !== 'Partial')
 										<button onclick="event.stopPropagation(); deleteOrder({{ $order->id }})" class="p-1 hover:bg-slate-500 rounded text-slate-400 hover:text-red-400 transition-colors" title="Cancel Order">
 											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
 										</button>
+										@endif
 
 									</div>
 								</td>
@@ -328,9 +330,9 @@
 
             <!-- Suppliers Table -->
             <div id="suppliers-table" class="overflow-y-auto hidden custom-scrollbar" style="max-height: 60vh;">
-                <table class="w-full border-collapse text-left text-xs text-white">
-                    <thead class="bg-slate-800 text-slate-300 sticky top-0 z-10">
-                        <tr>
+                <table class="w-full table-fixed border-collapse text-left text-xs text-white">
+                    <thead >
+                        <tr class="bg-slate-700 text-slate-300 border-b border-slate-600 sticky top-0 z-10">
                             <th class="px-3 py-3 font-medium rounded-tl-xl">Name</th>
                             <th class="px-3 py-3 font-medium">Contact Person</th>
                             <th class="px-3 py-3 font-medium">Phone</th>
