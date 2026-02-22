@@ -190,12 +190,12 @@ class="relative z-50"
                     ]
                 ];
             @endphp
-
             @foreach($menuItems as $item)
                 @if(auth()->user()->hasAnyRole($item['roles']))
                 <a href="{{ route($item['route']) }}" 
                    class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group relative mb-0.5 {{ request()->routeIs($item['pattern']) ? 'bg-gradient-to-r from-orange-600/90 to-red-600/90 text-white shadow-lg ring-1 ring-white/10' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}"
                    :class="sidebarOpen ? 'justify-start gap-3' : 'justify-center'">
+                    
                     
                     @if(request()->routeIs($item['pattern']))
                     <div class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-white rounded-r-sm shadow-[0_0_8px_rgba(255,255,255,0.5)]" x-show="sidebarOpen"></div>
