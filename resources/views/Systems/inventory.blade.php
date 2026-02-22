@@ -1570,31 +1570,72 @@
                     <!-- Form Content -->
                     <div class="p-5 overflow-y-auto custom-scrollbar" style="max-height: calc(90vh - 85px);">
                         <form id="receiveStockForm" method="POST">
-                            <!-- Purchase Order & Date Selection -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-2">
-                                        Purchase Order *
-                                    </label>
-                                    <select name="purchase_order_id" id="purchaseOrderSelect" onchange="loadPurchaseOrderItems(this.value)" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm" required>
-                                        <option value="">Select a purchase order...</option>
-                                        @php
-                                            $purchaseOrders = \App\Models\PurchaseOrder::with('supplier')->where('status', '!=', 'received')->get();
-                                        @endphp
-                                        @foreach($purchaseOrders as $order)
-                                            <option value="{{ $order->id }}" data-order-id="{{ $order->id }}">
-                                                {{ $order->order_number ?? 'PO-' . str_pad($order->id, 6, '0', STR_PAD_LEFT) }} - {{ $order->supplier->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                            <!-- Purchase Order Selection (Enhanced) -->
+                            <div class="mb-6">
+                                <label class="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                    </svg>
+                                    Select Purchase Order
+                                </label>
                                 
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-2">
-                                        Received Date *
-                                    </label>
-                                    <input type="date" name="received_date" value="{{ date('Y-m-d') }}" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm" required>
+                                <div class="bg-white/50 border-2 border-gray-200 rounded-2xl p-4 shadow-inner">
+                                    <!-- PO Search -->
+                                    <div class="relative mb-4">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                            </svg>
+                                        </div>
+                                        <input type="text" id="poSearchInput" placeholder="Search PO # or Supplier..." class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 text-sm outline-none transition-all">
+                                    </div>
+
+                                    @php
+                                        $purchaseOrders = \App\Models\PurchaseOrder::with('supplier')->where('status', '!=', 'received')->get();
+                                    @endphp
+
+                                    <!-- PO Cards Grid -->
+                                    <div id="poCardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                        @forelse($purchaseOrders as $order)
+                                            <div onclick="selectPurchaseOrder(this, {{ $order->id }})" 
+                                                 class="po-card group p-3 bg-white border-2 border-slate-200 rounded-xl cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition-all shadow-sm"
+                                                 data-po-num="{{ $order->order_number ?? 'PO-' . str_pad($order->id, 6, '0', STR_PAD_LEFT) }}"
+                                                 data-supplier="{{ $order->supplier->name }}">
+                                                <div class="flex justify-between items-start">
+                                                    <div>
+                                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Purchase Order</p>
+                                                        <h4 class="font-bold text-gray-800 text-sm mt-0.5">{{ $order->order_number ?? 'PO-' . str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</h4>
+                                                    </div>
+                                                    <div class="px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-500 group-hover:bg-amber-100 group-hover:text-amber-600 transition-colors">
+                                                        PENDING
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2 pt-2 border-t border-slate-100 flex items-center gap-2">
+                                                    <div class="w-2 h-2 rounded-full bg-amber-500"></div>
+                                                    <p class="text-xs font-semibold text-slate-600 truncate">{{ $order->supplier->name }}</p>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="col-span-2 py-8 text-center bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                                                <p class="text-gray-500 text-xs font-medium">No pending purchase orders found</p>
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                    
+                                    <!-- Hidden PO Input -->
+                                    <input type="hidden" name="purchase_order_id" id="selectedPurchaseOrderId" required>
                                 </div>
+                            </div>
+                            
+                            <!-- Received Date Selection -->
+                            <div class="mb-6">
+                                <label class="block text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Received Date *
+                                </label>
+                                <input type="date" name="received_date" value="{{ date('Y-m-d') }}" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm font-bold" required>
                             </div>
                             
                             <!-- Items to Receive Section -->
@@ -1645,14 +1686,62 @@
         </div>
 
         <script>
+            // Enhanced Purchase Order Selection Logic
+            function selectPurchaseOrder(card, orderId) {
+                // Remove selected class from all cards
+                document.querySelectorAll('.po-card').forEach(c => {
+                    c.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                    c.classList.add('border-slate-200', 'bg-white');
+                });
+
+                // Add selected class to current card
+                card.classList.remove('border-slate-200', 'bg-white');
+                card.classList.add('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+
+                // Update hidden input and load items
+                document.getElementById('selectedPurchaseOrderId').value = orderId;
+                loadPurchaseOrderItems(orderId);
+            }
+
+            // PO Search Logic
+            document.addEventListener('DOMContentLoaded', function() {
+                const poSearchInput = document.getElementById('poSearchInput');
+                if (poSearchInput) {
+                    poSearchInput.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        const cards = document.querySelectorAll('.po-card');
+                        
+                        cards.forEach(card => {
+                            const poNum = card.dataset.poNum.toLowerCase();
+                            const supplier = card.dataset.supplier.toLowerCase();
+                            
+                            if (poNum.includes(searchTerm) || supplier.includes(searchTerm)) {
+                                card.classList.remove('hidden');
+                            } else {
+                                card.classList.add('hidden');
+                            }
+                        });
+                    });
+                }
+            });
+
             // Receive Stock Modal Functions
             function openReceiveStockModal() {
                 document.getElementById('receiveStockModal').classList.remove('hidden');
+                // Reset PO cards selection
+                document.querySelectorAll('.po-card').forEach(c => {
+                    c.classList.remove('border-amber-500', 'bg-amber-50', 'ring-2', 'ring-amber-500/20');
+                    c.classList.add('border-slate-200', 'bg-white');
+                    c.classList.remove('hidden');
+                });
+                document.getElementById('selectedPurchaseOrderId').value = '';
+                if (document.getElementById('poSearchInput')) document.getElementById('poSearchInput').value = '';
             }
 
             function closeReceiveStockModal() {
                 document.getElementById('receiveStockModal').classList.add('hidden');
                 document.getElementById('receiveStockForm').reset();
+                document.getElementById('selectedPurchaseOrderId').value = '';
                 document.getElementById('receiveStockItems').innerHTML = `
                     <div class="flex flex-col items-center justify-center py-12 px-3">
                         <svg class="w-16 h-16 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
