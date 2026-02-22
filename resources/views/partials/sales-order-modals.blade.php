@@ -1,6 +1,6 @@
 <!-- View Order Modal -->
 <div id="viewOrderModal-{{ $order->id }}" class="fixed inset-0 bg-black/70 hidden overflow-y-auto" style="z-index: 99999; cursor: default;">
-    <div class="rounded-lg shadow-2xl max-w-4xl w-[95%] mx-auto my-8 p-5" style="background-color: #FFF1DA;" onclick="event.stopPropagation()">
+    <div class="rounded-lg shadow-2xl max-w-3xl w-[95%] mx-auto my-8 p-5" style="background-color: #FFF1DA;" onclick="event.stopPropagation()">
         <!-- Header -->
         <div class="flex items-center justify-between mb-5 border-b-2 pb-6" style="border-color: #374151;">
             <div>
