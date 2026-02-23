@@ -206,13 +206,14 @@
 							<table class="w-full text-left border-collapse">
 								<thead>
 									<tr class="table w-full table-fixed bg-slate-700/50 text-slate-300 border-b border-slate-600">
-										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-1/6">Transaction #</th>
-										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-1/6">Date</th>
-										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-1/12">Type</th>
-										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-1/6">Category</th>
-										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-1/6">Description</th>
-										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-1/6">Amount</th>
-										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-1/12">Status</th>
+										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-[15%]">Transaction #</th>
+										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-[15%]">Date</th>
+										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-[8%]">Type</th>
+										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-[15%]">Category</th>
+										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-[15%]">Description</th>
+										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-[15%]">Amount</th>
+										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-[9%]">Status</th>
+										<th class="px-4 py-3 font-semibold text-xs uppercase tracking-wider w-[8%]">Action</th>
 									</tr>
 								</thead>
 								<tbody class="divide-y divide-slate-600 block overflow-y-auto custom-scrollbar" style="max-height: 50vh;" id="transactionTableBody">
@@ -224,14 +225,14 @@
 											data-date="{{ \Carbon\Carbon::parse($transaction->date)->format('M d, Y') }}"
 											data-category="@if($transaction->salesOrder){{ strtolower($transaction->salesOrder->customer->name ?? '') }}@elseif($transaction->purchaseOrder){{ strtolower($transaction->purchaseOrder->supplier->name ?? '') }}@endif"
 											data-description="@if($transaction->salesOrder){{ strtolower($transaction->salesOrder->order_number ?? '') }}@elseif($transaction->purchaseOrder){{ strtolower($transaction->purchaseOrder->order_number ?? '') }}@else{{ strtolower($transaction->description ?? '') }}@endif">
-											<td class="px-4 py-3 font-mono text-slate-300 w-1/6">TO-{{ \Carbon\Carbon::parse($transaction->date)->format('Y') }}-{{ str_pad($transaction->id, 3, '0', STR_PAD_LEFT) }}</td>
-											<td class="px-4 py-3 font-medium text-slate-200 w-1/6">{{ \Carbon\Carbon::parse($transaction->date)->format('M d, Y') }}</td>
-											<td class="px-4 py-3 w-1/12">
+											<td class="px-4 py-3 font-mono text-slate-300 w-[15%]">TO-{{ \Carbon\Carbon::parse($transaction->date)->format('Y') }}-{{ str_pad($transaction->id, 3, '0', STR_PAD_LEFT) }}</td>
+											<td class="px-4 py-3 font-medium text-slate-200 w-[15%]">{{ \Carbon\Carbon::parse($transaction->date)->format('M d, Y') }}</td>
+											<td class="px-4 py-3 w-[8%]">
 												<span class="text-xs font-bold {{ $transaction->transaction_type === 'Income' ? 'text-green-400' : 'text-red-400' }}">
 													{{ $transaction->transaction_type === 'Income' ? 'Income' : 'Expense' }}
 												</span>
 											</td>
-											<td class="px-4 py-3 font-medium w-1/6">
+											<td class="px-4 py-3 font-medium w-[15%]">
 												@if($transaction->salesOrder)
 													<span class="text-blue-300">{{ $transaction->salesOrder->customer->name ?? 'N/A' }}</span>
 												@elseif($transaction->purchaseOrder)
@@ -240,7 +241,7 @@
 													<span class="text-slate-400">N/A</span>
 												@endif
 											</td>
-											<td class="px-4 py-3 w-1/6">
+											<td class="px-4 py-3 w-[15%]">
 												@if($transaction->salesOrder)
 													<span class="text-slate-300">{{ $transaction->salesOrder->order_number }}</span>
 												@elseif($transaction->purchaseOrder)
@@ -249,10 +250,10 @@
 													<span class="text-slate-400 italic">{{ $transaction->description ?? '-' }}</span>
 												@endif
 											</td>
-											<td class="px-4 py-3 font-bold text-left w-1/6">
+											<td class="px-4 py-3 font-bold text-left w-[15%]">
 												<span class="text-{{ $transaction->transaction_type === 'Income' ? 'green' : 'orange' }}-300">₱{{ number_format($transaction->amount, 2) }}</span>
 											</td>
-											<td class="px-4 py-3 w-1/12">
+											<td class="px-4 py-3 w-[9%]">
 												@php
 													$status = 'Paid'; // Default
 													if ($transaction->salesOrder) {
@@ -265,6 +266,25 @@
 													if ($status === 'Pending' || $status === 'Unpaid') $statusColor = 'text-slate-400';
 												@endphp
 												<span class="text-xs font-bold {{ $statusColor }}">{{ $status }}</span>
+											</td>
+											<td class="px-4 py-3 w-[8%]">
+												@if($status === 'Paid')
+													<a href="/accounting/receipt/TO-{{ \Carbon\Carbon::parse($transaction->date)->format('Y') }}-{{ str_pad($transaction->id, 3, '0', STR_PAD_LEFT) }}" 
+													   target="_blank"
+													   class="inline-flex items-center p-1.5 bg-white text-slate-800 rounded shadow hover:bg-slate-100 transition"
+													   title="View Receipt"
+													   onclick="event.stopPropagation()">
+														<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+														</svg>
+													</a>
+												@else
+													<span class="inline-flex items-center p-1.5 bg-slate-600/50 text-slate-400 rounded cursor-not-allowed opacity-50" title="Full payment required">
+														<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+														</svg>
+													</span>
+												@endif
 											</td>
 										</tr>
 									@empty
@@ -936,13 +956,14 @@
 		// Get the selected transaction from the table
 		const selectedRow = document.querySelector('tr.transaction-row.border-amber-500');
 		
-		if (!selectedRow) {
-			showErrorNotification('Please select a transaction by clicking on a row in the table to export as receipt.');
+		// Extract transaction details from the selected row
+		const transactionId = selectedRow.getAttribute('data-id');
+		const status = selectedRow.getAttribute('data-status');
+		
+		if (status !== 'paid') {
+			showErrorNotification('Receipts can only be exported for fully paid orders.');
 			return;
 		}
-		
-		// Extract transaction ID from the selected row
-		const transactionId = selectedRow.getAttribute('data-id');
 		
 		// Open receipt in new tab
 		window.open(`/accounting/receipt/${transactionId}`, '_blank');
