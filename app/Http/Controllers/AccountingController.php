@@ -100,8 +100,19 @@ class AccountingController extends Controller
         $materialsPercent = $totalBreakdown > 0 ? ($materialsExpense / $totalBreakdown) * 100 : 0;
         $laborPercent = $totalBreakdown > 0 ? ($laborExpense / $totalBreakdown) * 100 : 0;
 
-        // Fetch pagination-limited transactions with eager loading
+        // Fetch aggregated transactions to group multiple payments for the same order
         $transactions = Accounting::with(['salesOrder.customer', 'purchaseOrder.supplier'])
+            ->select([
+                'transaction_type',
+                'sales_order_id',
+                'purchase_order_id',
+                DB::raw('MAX(id) as id'),
+                DB::raw('MAX(date) as date'),
+                DB::raw('SUM(amount) as amount'),
+                DB::raw('MAX(description) as description'),
+                DB::raw('MAX(user_id) as user_id'),
+            ])
+            ->groupBy('transaction_type', 'sales_order_id', 'purchase_order_id', DB::raw('(CASE WHEN sales_order_id IS NULL AND purchase_order_id IS NULL THEN id ELSE 0 END)'))
             ->orderBy('date', 'desc')
             ->paginate(25);
         
@@ -309,7 +320,10 @@ class AccountingController extends Controller
                 ->sum('amount');
 
             $paymentStatus = $totalPaid >= $totalAmount ? 'Paid' : 'Partial';
-            $salesOrder->update(['payment_status' => $paymentStatus]);
+            $salesOrder->update([
+                'payment_status' => $paymentStatus,
+                'paid_amount' => $totalPaid
+            ]);
         }
         // For Expense (Purchase Orders)
         elseif ($request->transaction_type === 'Expense') {
@@ -346,7 +360,10 @@ class AccountingController extends Controller
                 ->sum('amount');
 
             $paymentStatus = $totalPaid >= $totalAmount ? 'Paid' : 'Partial';
-            $purchaseOrder->update(['payment_status' => $paymentStatus]);
+            $purchaseOrder->update([
+                'payment_status' => $paymentStatus,
+                'paid_amount' => $totalPaid
+            ]);
         }
 
         \App\Models\SystemActivity::log('Accounting', 'Transaction Logged', "{$request->transaction_type} of ₱" . number_format($request->amount, 2) . " logged for reference {$request->reference}.", $request->transaction_type === 'Income' ? 'emerald' : 'red');
