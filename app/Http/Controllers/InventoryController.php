@@ -262,7 +262,7 @@ class InventoryController extends Controller
                         'reference_id' => $movement->reference_id,
                         'notes' => $movement->notes,
                         'created_at' => $movement->created_at,
-                        'user_name' => $movement->user->name ?? 'System',
+                        'user_name' => $movement->user->name ?? 'Admin',
                     ];
                 })
                 ->values();
@@ -427,7 +427,7 @@ class InventoryController extends Controller
                 'wo_id' => $woId,
                 'team_assigned' => $teamAssigned,
                 'notes' => $movement->notes,
-                'user_name' => $movement->user->name ?? 'System',
+                'user_name' => $movement->user->name ?? 'Admin',
                 'status' => $movement->status ?? 'completed',
                 'created_at' => $movement->created_at
             ];
