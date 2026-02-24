@@ -111,11 +111,11 @@
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
 									</svg>
 								</div>
-								<input id="workOrderSearchInput" type="text" placeholder="Search work orders..." class="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white placeholder-slate-400">
+								<input id="workOrderSearchInput" type="text" placeholder="Search by order #, product, customer..." oninput="filterWorkOrders()" class="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white placeholder-slate-400">
 							</div>
 						</div>
 						<div class="w-full md:w-auto">
-							<select id="statusFilterSelect" class="w-full md:w-auto bg-slate-700 border-slate-600 text-white text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5">
+							<select id="statusFilterSelect" onchange="filterWorkOrders()" class="w-full md:w-auto bg-slate-700 border-slate-600 text-white text-sm rounded-lg focus:ring-amber-500 focus:border-amber-500 block p-2.5">
 								<option value="all">All Status</option>
 								<option value="in_progress">In Progress</option>
 								<option value="overdue">Overdue</option>
@@ -172,9 +172,21 @@
                 <div class="p-6">
                     <!-- Sales Orders List -->
                     <div id="salesOrdersListSection" class="space-y-3">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center justify-between mb-2">
                             <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Pending Sales Orders</h4>
                             <span class="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{{ $pendingItemsCount }} Products Pending</span>
+                        </div>
+
+                        <!-- Search Input -->
+                        <div class="relative mb-4">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <input type="text" id="modalSalesOrderSearch" placeholder="Search by order # or customer..." 
+                                   class="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-700 placeholder-gray-400 shadow-sm transition-all"
+                                   oninput="filterModalSalesOrders()">
                         </div>
                         
                         <div class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
@@ -191,7 +203,9 @@
                                     ])->values();
                                 @endphp
                                 <div onclick="selectSalesOrder({{ $salesOrder->id }}, '{{ addslashes($salesOrder->order_number) }}', '{{ addslashes($salesOrder->customer->name ?? '') }}', '{{ $salesOrder->delivery_date }}', {{ json_encode($itemsData) }})" 
-                                     class="group relative p-5 border-2 border-gray-300 rounded-xl hover:border-blue-400 hover:shadow-lg cursor-pointer transition-all duration-300 bg-white hover:bg-blue-50">
+                                     class="sales-order-card group relative p-5 border-2 border-gray-300 rounded-xl hover:border-blue-400 hover:shadow-lg cursor-pointer transition-all duration-300 bg-white hover:bg-blue-50"
+                                     data-order-number="{{ strtolower($salesOrder->order_number) }}"
+                                     data-customer-name="{{ strtolower($salesOrder->customer->name ?? '') }}">
                                     
                                     <!-- Actions -->
                                     <div class="absolute top-5 right-5 flex items-center gap-2">
@@ -268,6 +282,17 @@
                                     <p class="text-gray-400 text-sm mt-1">New orders will appear here</p>
                                 </div>
                             @endforelse
+
+                            <!-- No matching search results in modal -->
+                            <div id="modalNoResults" class="text-center py-12 hidden">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-50 rounded-full mb-4">
+                                    <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-gray-500 font-medium">No matching orders found</p>
+                                <p class="text-gray-400 text-sm mt-1">Try a different search term</p>
+                            </div>
                         </div>
                     </div>
 
@@ -330,19 +355,21 @@
                                     Assign To Team 
                                     <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative">
-                                    <select name="assigned_to" class="w-full bg-white border-2 border-gray-300 rounded-lg px-4 py-3.5 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base appearance-none pr-10 transition-all" required>
-                                        <option value="">Select a production team...</option>
-                                        <option value="Team A">🔨 Team A</option>
-                                        <option value="Team B">🔨 Team B</option>
-                                        <option value="Team C">🔨 Team C</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                        </svg>
-                                    </div>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <button type="button" onclick="selectTeam(this, 'Team A')"
+                                        class="team-btn flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 shadow-sm">
+                                        🔨 Team A
+                                    </button>
+                                    <button type="button" onclick="selectTeam(this, 'Team B')"
+                                        class="team-btn flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 shadow-sm">
+                                        🔨 Team B
+                                    </button>
+                                    <button type="button" onclick="selectTeam(this, 'Team C')"
+                                        class="team-btn flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 shadow-sm">
+                                        🔨 Team C
+                                    </button>
                                 </div>
+                                <input type="hidden" name="assigned_to" id="selectedTeam" required>
                             </div>
                         </div>
 
@@ -801,6 +828,12 @@
                     modal.classList.add('hidden');
                     modal.classList.remove('flex');
                     document.getElementById('workOrderForm').reset();
+                    // Clear search input and results in modal
+                    const searchInput = document.getElementById('modalSalesOrderSearch');
+                    if (searchInput) {
+                        searchInput.value = '';
+                        filterModalSalesOrders();
+                    }
                 }
             }
 
@@ -844,6 +877,29 @@
                 } else {
                     modal.classList.add('hidden');
                     modal.classList.remove('flex');
+                }
+            }
+
+            function filterModalSalesOrders() {
+                const searchTerm = document.getElementById('modalSalesOrderSearch').value.toLowerCase().trim();
+                const cards = document.querySelectorAll('.sales-order-card');
+                const noResults = document.getElementById('modalNoResults');
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const orderNumber = card.getAttribute('data-order-number') || '';
+                    const customerName = card.getAttribute('data-customer-name') || '';
+
+                    if (orderNumber.includes(searchTerm) || customerName.includes(searchTerm)) {
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                if (noResults) {
+                    noResults.classList.toggle('hidden', visibleCount > 0 || cards.length === 0);
                 }
             }
 
@@ -914,10 +970,29 @@
                 }
             }
             
+            function selectTeam(btn, teamName) {
+                // Remove active state from all team buttons
+                document.querySelectorAll('.team-btn').forEach(b => {
+                    b.classList.remove('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-500/20');
+                    b.classList.add('border-gray-300', 'bg-white');
+                });
+                // Add active state to clicked button
+                btn.classList.remove('border-gray-300', 'bg-white');
+                btn.classList.add('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-500/20');
+                // Set hidden input value
+                document.getElementById('selectedTeam').value = teamName;
+            }
+
             function resetWorkOrderForm() {
                 const listSection = document.getElementById('salesOrdersListSection');
                 const formSection = document.getElementById('workOrderForm');
                 document.getElementById('workOrderForm').reset();
+                // Reset team buttons
+                document.querySelectorAll('.team-btn').forEach(b => {
+                    b.classList.remove('border-blue-500', 'bg-blue-50', 'ring-2', 'ring-blue-500/20');
+                    b.classList.add('border-gray-300', 'bg-white');
+                });
+                document.getElementById('selectedTeam').value = '';
                 listSection.classList.remove('hidden');
                 formSection.classList.add('hidden');
             }
@@ -1530,6 +1605,45 @@
                 `;
                 document.body.appendChild(notif);
                 setTimeout(() => notif.remove(), 5000);
+            }
+
+            // Filter work orders by search text and status
+            function filterWorkOrders() {
+                const searchTerm = (document.getElementById('workOrderSearchInput').value || '').toLowerCase().trim();
+                const statusFilter = document.getElementById('statusFilterSelect').value;
+                const rows = document.querySelectorAll('.work-order-row');
+                const emptyState = document.getElementById('workOrderEmptyState');
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const orderNumber = (row.getAttribute('data-order-number') || '').toLowerCase();
+                    const productName = (row.getAttribute('data-product-name') || '').toLowerCase();
+                    const customerName = (row.getAttribute('data-customer-name') || '').toLowerCase();
+                    const assignedTo = (row.getAttribute('data-assigned-to') || '').toLowerCase();
+                    const status = row.getAttribute('data-status') || '';
+
+                    const matchesSearch = !searchTerm ||
+                        orderNumber.includes(searchTerm) ||
+                        productName.includes(searchTerm) ||
+                        customerName.includes(searchTerm) ||
+                        assignedTo.includes(searchTerm);
+
+                    const matchesStatus = statusFilter === 'all' || status === statusFilter;
+
+                    if (matchesSearch && matchesStatus) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (emptyState) {
+                    emptyState.classList.toggle('hidden', visibleCount > 0);
+                    if (visibleCount === 0) {
+                        emptyState.textContent = searchTerm ? 'No work orders match your search' : 'No active production found';
+                    }
+                }
             }
 
             @if(session('success'))
