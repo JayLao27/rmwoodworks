@@ -407,7 +407,7 @@ class ProcurementController extends Controller
                     'reference_type' => 'purchase_order',
                     'reference_id' => $purchaseOrder->id,
                     'notes' => 'Received from PO ' . $purchaseOrder->order_number 
-                        . ' | Received by: ' . (auth()->user()->name ?? 'System')
+                        . ' | Received by: ' . (auth()->user()->name ?? 'Admin')
                         . ' | Defect Qty: ' . number_format($defect, 2),
                     'user_id' => auth()->id()
                     // created_at is automatically set by Laravel to NOW()
@@ -535,7 +535,7 @@ class ProcurementController extends Controller
                     'supplier_name' => $purchaseOrder && $purchaseOrder->supplier ? $purchaseOrder->supplier->name : 'N/A',
                     'status' => $movement->status,
                     'notes' => $movement->notes,
-                    'user_name' => $movement->user->name ?? 'System',
+                    'user_name' => $movement->user->name ?? 'Admin',
                 ];
             });
 
@@ -601,7 +601,7 @@ class ProcurementController extends Controller
                         'reference_type' => 'purchase_order',
                         'reference_id' => $purchaseOrder->id,
                         'notes' => 'Bulk received from PO ' . $purchaseOrder->order_number 
-                            . ' | Received by: ' . (auth()->user()->name ?? 'System'),
+                            . ' | Received by: ' . (auth()->user()->name ?? 'Admin'),
                         'user_id' => auth()->id()
                     ]);
 
