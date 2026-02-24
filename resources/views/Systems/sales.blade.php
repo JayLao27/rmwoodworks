@@ -537,29 +537,67 @@ $paymentBg = [
 						<form method="POST" action="{{ route('sales-orders.store') }}" id="newOrderForm" onsubmit="return confirmSalesOrder(event)">
 							@csrf
 							<div class="space-y-5">
-								<!-- Customer Selection -->
-								<div>
-									<label class="block text-base font-bold text-gray-900 mb-3 flex items-center gap-1.5">
-										<svg class="w-3.5 h-3.5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-											<path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-										</svg>
-										Customer <span class="text-red-500">*</span>
-									</label>
-									<select name="customer_id" class="w-full border-2 border-gray-300 rounded-xl px-3 py-3 text-base font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm @error('customer_id') border-red-500 @enderror" required>
-										<option value="">-- Select Customer --</option>
+								<!-- Customer Selection (Searchable) -->
+							<div>
+								<label class="block text-base font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+									<svg class="w-3.5 h-3.5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+										<path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+									</svg>
+									Customer <span class="text-red-500">*</span>
+								</label>
+								<input type="hidden" name="customer_id" id="salesCustomerIdHidden" value="{{ old('customer_id') }}" required>
+								<div class="relative" id="customerSearchWrapper">
+									<div class="relative">
+										<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+											<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+											</svg>
+										</div>
+										<input type="text" id="customerSearchInput" autocomplete="off" placeholder="Type to search customer name..." class="w-full pl-10 pr-10 border-2 border-gray-300 rounded-xl px-3 py-3 text-base font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm @error('customer_id') border-red-500 @enderror" oninput="filterCustomerList()" onfocus="document.getElementById('customerResultsList').classList.remove('hidden')">
+										<button type="button" id="customerClearBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden" onclick="clearCustomerSelection()">
+											<svg class="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+											</svg>
+										</button>
+									</div>
+									<!-- Selected customer badge -->
+									<div id="customerSelectedBadge" class="hidden mt-2 p-2.5 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm" id="customerInitial">?</div>
+											<div>
+												<p class="font-bold text-gray-900 text-sm" id="customerSelectedName">—</p>
+												<p class="text-xs text-gray-500" id="customerSelectedType">—</p>
+											</div>
+										</div>
+										<button type="button" onclick="clearCustomerSelection()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-1 transition-all">
+											<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+										</button>
+									</div>
+									<!-- Results dropdown -->
+									<div id="customerResultsList" class="hidden absolute z-[100001] w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
 										@foreach($customers as $c)
-										<option value="{{ $c->id }}" {{ old('customer_id') == $c->id ? 'selected' : '' }}>{{ $c->name }} ({{ $c->customer_type }})</option>
+										<button type="button" class="customer-option w-full flex items-center gap-3 px-3 py-2.5 hover:bg-amber-50 transition-all text-left border-b border-gray-100 last:border-b-0" data-id="{{ $c->id }}" data-name="{{ $c->name }}" data-type="{{ $c->customer_type }}" onclick="selectCustomer(this)">
+											<div class="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+												{{ strtoupper(substr($c->name, 0, 1)) }}
+											</div>
+											<div class="flex-1 min-w-0">
+												<p class="font-bold text-gray-900 text-sm truncate">{{ $c->name }}</p>
+												<p class="text-xs text-gray-500">{{ $c->customer_type }}</p>
+											</div>
+										</button>
 										@endforeach
-									</select>
-									@error('customer_id')
-									<p class="text-red-500 text-xs mt-2 flex items-center gap-1">
-										<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-											<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-										</svg>
-										{{ $message }}
-									</p>
-									@enderror
+										<div id="customerNoMatch" class="hidden px-4 py-3 text-center text-gray-400 text-sm">No matching customer found</div>
+									</div>
 								</div>
+								@error('customer_id')
+								<p class="text-red-500 text-xs mt-2 flex items-center gap-1">
+									<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+										<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+									</svg>
+									{{ $message }}
+								</p>
+								@enderror
+							</div>
 
 								<div class="grid grid-cols-1 gap-5">
 									<!-- Delivery Date -->
@@ -591,24 +629,68 @@ $paymentBg = [
 
 									<div class="bg-white rounded-xl border-2 border-slate-300 p-5 shadow-lg">
 										<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-											<!-- Product Selection -->
-											<div>
-												<label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
-													<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-														<path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+											<!-- Product Selection (Searchable) -->
+									<div>
+										<label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
+											<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+												<path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+											</svg>
+											Product <span class="text-red-500">*</span>
+										</label>
+										<!-- Hidden select kept for pricing JS compatibility -->
+										<select id="newItemProduct" name="items[0][product_id]" class="hidden" required>
+											<option value="">-- Select Product --</option>
+											@foreach($products as $p)
+											<option value="{{ $p->id }}" data-price="{{ number_format($p->selling_price,2,'.','') }}" data-max="{{ $p->max_producible ?? '' }}">{{ $p->product_name }}</option>
+											@endforeach
+										</select>
+										<div class="relative" id="productSearchWrapper">
+											<div class="relative">
+												<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+													<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
 													</svg>
-													Product <span class="text-red-500">*</span>
-												</label>
-												<select id="newItemProduct" name="items[0][product_id]" class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.product_id') border-red-500 @enderror" required>
-													<option value="">-- Select Product --</option>
-													@foreach($products as $p)
-													<option value="{{ $p->id }}" data-price="{{ number_format($p->selling_price,2,'.','') }}" data-max="{{ $p->max_producible ?? '' }}">{{ $p->product_name }}</option>
-													@endforeach
-												</select>
-												@error('items.0.product_id')
-												<p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-												@enderror
+												</div>
+												<input type="text" id="productSearchInput" autocomplete="off" placeholder="Search product..." class="w-full pl-9 pr-9 border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.product_id') border-red-500 @enderror" oninput="filterProductList()" onfocus="document.getElementById('productResultsList').classList.remove('hidden')">
+												<button type="button" id="productClearBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden" onclick="clearProductSelection()">
+													<svg class="w-3.5 h-3.5 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+													</svg>
+												</button>
 											</div>
+											<!-- Selected product badge -->
+											<div id="productSelectedBadge" class="hidden mt-1.5 p-2 bg-amber-50 border-2 border-amber-400 rounded-lg flex items-center justify-between">
+												<div class="flex items-center gap-2">
+													<div class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs" id="productInitial">?</div>
+													<div>
+														<p class="font-bold text-gray-900 text-xs" id="productSelectedName">—</p>
+														<p class="text-[10px] text-gray-500" id="productSelectedPrice">—</p>
+													</div>
+												</div>
+												<button type="button" onclick="clearProductSelection()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-0.5 transition-all">
+													<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+												</button>
+											</div>
+											<!-- Results dropdown -->
+											<div id="productResultsList" class="hidden absolute z-[100001] w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-44 overflow-y-auto">
+												@foreach($products as $p)
+												<button type="button" class="product-option w-full flex items-center gap-2.5 px-3 py-2 hover:bg-amber-50 transition-all text-left border-b border-gray-100 last:border-b-0" data-id="{{ $p->id }}" data-name="{{ $p->product_name }}" data-price="{{ number_format($p->selling_price,2,'.','') }}" onclick="selectProduct(this)">
+													<div class="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
+														{{ strtoupper(substr($p->product_name, 0, 1)) }}
+													</div>
+													<div class="flex-1 min-w-0">
+														<p class="font-bold text-gray-900 text-xs truncate">{{ $p->product_name }}</p>
+														<p class="text-[10px] text-gray-500">₱{{ number_format($p->selling_price, 2) }}</p>
+													</div>
+												</button>
+												@endforeach
+												<div id="productNoMatch" class="hidden px-4 py-3 text-center text-gray-400 text-sm">No matching product found</div>
+											</div>
+										</div>
+										@error('items.0.product_id')
+										<p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+										@enderror
+									</div>
 
 											<!-- Quantity -->
 											<div>
@@ -1942,7 +2024,76 @@ document.addEventListener('DOMContentLoaded', function() {
 	const archiveEnd = document.getElementById('archiveEndDate');
 	if (archiveStart) archiveStart.addEventListener('change', applyArchiveFilters);
 	if (archiveEnd) archiveEnd.addEventListener('change', applyArchiveFilters);
+
+	// Close customer dropdown on outside click
+	document.addEventListener('click', function(e) {
+		const wrapper = document.getElementById('customerSearchWrapper');
+		const results = document.getElementById('customerResultsList');
+		if (wrapper && results && !wrapper.contains(e.target)) {
+			results.classList.add('hidden');
+		}
+	});
 });
+
+// Customer searchable typeahead
+function filterCustomerList() {
+	const input = document.getElementById('customerSearchInput');
+	const term = input.value.toLowerCase().trim();
+	const options = document.querySelectorAll('.customer-option');
+	const noMatch = document.getElementById('customerNoMatch');
+	const resultsList = document.getElementById('customerResultsList');
+	let count = 0;
+
+	resultsList.classList.remove('hidden');
+	options.forEach(opt => {
+		const name = opt.getAttribute('data-name').toLowerCase();
+		const type = opt.getAttribute('data-type').toLowerCase();
+		if (name.includes(term) || type.includes(term)) {
+			opt.classList.remove('hidden');
+			count++;
+		} else {
+			opt.classList.add('hidden');
+		}
+	});
+	noMatch.classList.toggle('hidden', count > 0);
+}
+
+function selectCustomer(btn) {
+	const id = btn.getAttribute('data-id');
+	const name = btn.getAttribute('data-name');
+	const type = btn.getAttribute('data-type');
+
+	document.getElementById('salesCustomerIdHidden').value = id;
+	document.getElementById('customerSearchInput').value = name;
+	document.getElementById('customerSearchInput').classList.add('hidden');
+	document.getElementById('customerResultsList').classList.add('hidden');
+	document.getElementById('customerClearBtn').classList.remove('hidden');
+
+	// Show selected badge
+	const badge = document.getElementById('customerSelectedBadge');
+	badge.classList.remove('hidden');
+	badge.classList.add('flex');
+	document.getElementById('customerSelectedName').textContent = name;
+	document.getElementById('customerSelectedType').textContent = type;
+	document.getElementById('customerInitial').textContent = name.charAt(0).toUpperCase();
+}
+
+function clearCustomerSelection() {
+	document.getElementById('salesCustomerIdHidden').value = '';
+	const input = document.getElementById('customerSearchInput');
+	input.value = '';
+	input.classList.remove('hidden');
+	document.getElementById('customerClearBtn').classList.add('hidden');
+
+	const badge = document.getElementById('customerSelectedBadge');
+	badge.classList.add('hidden');
+	badge.classList.remove('flex');
+
+	// Reset all options
+	document.querySelectorAll('.customer-option').forEach(opt => opt.classList.remove('hidden'));
+	document.getElementById('customerNoMatch').classList.add('hidden');
+	input.focus();
+}
 </script>
 
 <script src="{{ asset('js/sales-ajax.js') }}"></script>

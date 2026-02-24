@@ -356,7 +356,12 @@ class InventoryController extends Controller
             ->get()
             ->keyBy('id');
 
-        $workOrders = WorkOrder::whereIn('id', $movements->where('reference_type', 'work_order')->pluck('reference_id')->unique())
+        // WorkOrder movements may be stored as either 'work_order' or WorkOrder::class (App\Models\WorkOrder)
+        $workOrderMovementIds = $movements->filter(function ($m) {
+            return $m->reference_type === 'work_order' || $m->reference_type === WorkOrder::class;
+        })->pluck('reference_id')->unique();
+
+        $workOrders = WorkOrder::whereIn('id', $workOrderMovementIds)
             ->get()
             ->keyBy('id');
 
@@ -383,10 +388,13 @@ class InventoryController extends Controller
             };
 
             $referenceInfo = '';
-            if ($movement->reference_type === 'purchase_order') {
+            $isWorkOrder = $movement->reference_type === 'work_order' || $movement->reference_type === WorkOrder::class;
+            $isPurchaseOrder = $movement->reference_type === 'purchase_order' || $movement->reference_type === PurchaseOrder::class;
+
+            if ($isPurchaseOrder) {
                 $po = $purchaseOrders->get($movement->reference_id);
                 $referenceInfo = $po ? "PO: {$po->order_number}" : "PO #" . $movement->reference_id;
-            } elseif ($movement->reference_type === 'work_order') {
+            } elseif ($isWorkOrder) {
                 $wo = $workOrders->get($movement->reference_id);
                 $referenceInfo = $wo ? $wo->order_number : "WO #" . $movement->reference_id;
             } elseif ($movement->reference_type === 'manual_adjustment') {
@@ -397,13 +405,13 @@ class InventoryController extends Controller
                 $referenceInfo = ucfirst(str_replace('_', ' ', $movement->reference_type));
             }
 
-            $purchaseOrder = $movement->reference_type === 'purchase_order'
+            $purchaseOrder = $isPurchaseOrder
                 ? $purchaseOrders->get($movement->reference_id)
                 : null;
             $supplierName = $purchaseOrder?->supplier?->name;
             $poNumber = $purchaseOrder?->order_number ? 'PO: ' . $purchaseOrder->order_number : null;
 
-            $workOrder = $movement->reference_type === 'work_order'
+            $workOrder = $isWorkOrder
                 ? $workOrders->get($movement->reference_id)
                 : null;
             $woId = $workOrder?->order_number;
