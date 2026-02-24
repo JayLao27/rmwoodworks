@@ -58,7 +58,7 @@ class ProductionController extends Controller
                 });
             })
             ->orderBy('delivery_date')
-            ->paginate(15);
+            ->get();
 
         $pendingItemsCount = (int) SalesOrderItem::whereHas('salesOrder', function($query) {
             $query->whereNotIn('status', ['Delivered', 'Cancelled']);
@@ -187,6 +187,7 @@ class ProductionController extends Controller
                     'assigned_to' => $validated['assigned_to'],
                     'priority' => $validated['priority'] ?? 'medium',
                     'status' => 'in_progress',
+                    'starting_date' => now()->toDateString(),
                     'user_id' => auth()->id(),
                 ]);
 
@@ -378,7 +379,7 @@ class ProductionController extends Controller
             'product_name' => $workOrder->product_name ?? $workOrder->product->product_name ?? 'Unknown',
             'quantity' => $workOrder->quantity,
             'completion_quantity' => $workOrder->completion_quantity,
-            'starting_date' => $workOrder->created_at ? $workOrder->created_at->toIso8601String() : null,
+            'starting_date' => $workOrder->starting_date ? $workOrder->starting_date->toIso8601String() : ($workOrder->created_at ? $workOrder->created_at->toIso8601String() : null),
             'due_date' => $workOrder->due_date ? $workOrder->due_date->toIso8601String() : null,
             'assigned_to' => $workOrder->assigned_to,
             'status' => $workOrder->status,
