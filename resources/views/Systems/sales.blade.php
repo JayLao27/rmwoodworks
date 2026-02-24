@@ -547,19 +547,7 @@ $paymentBg = [
 								</label>
 								<input type="hidden" name="customer_id" id="salesCustomerIdHidden" value="{{ old('customer_id') }}" required>
 								<div class="relative" id="customerSearchWrapper">
-									<div class="relative">
-										<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-											<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-											</svg>
-										</div>
-										<input type="text" id="customerSearchInput" autocomplete="off" placeholder="Type to search customer name..." class="w-full pl-10 pr-10 border-2 border-gray-300 rounded-xl px-3 py-3 text-base font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm @error('customer_id') border-red-500 @enderror" oninput="filterCustomerList()" onfocus="document.getElementById('customerResultsList').classList.remove('hidden')">
-										<button type="button" id="customerClearBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden" onclick="clearCustomerSelection()">
-											<svg class="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-											</svg>
-										</button>
-									</div>
+									<input type="text" id="customerSearchInput" autocomplete="off" placeholder="Type to search customer name..." class="w-full border-2 border-gray-300 rounded-xl px-3 py-3 text-base font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm @error('customer_id') border-red-500 @enderror" oninput="filterCustomerList()" onfocus="document.getElementById('customerResultsList').classList.remove('hidden')">
 									<!-- Selected customer badge -->
 									<div id="customerSelectedBadge" class="hidden mt-2 p-2.5 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-center justify-between">
 										<div class="flex items-center gap-2">
@@ -645,19 +633,7 @@ $paymentBg = [
 											@endforeach
 										</select>
 										<div class="relative" id="productSearchWrapper">
-											<div class="relative">
-												<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-													<svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-													</svg>
-												</div>
-												<input type="text" id="productSearchInput" autocomplete="off" placeholder="Search product..." class="w-full pl-9 pr-9 border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.product_id') border-red-500 @enderror" oninput="filterProductList()" onfocus="document.getElementById('productResultsList').classList.remove('hidden')">
-												<button type="button" id="productClearBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden" onclick="clearProductSelection()">
-													<svg class="w-3.5 h-3.5 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-													</svg>
-												</button>
-											</div>
+											<input type="text" id="productSearchInput" autocomplete="off" placeholder="Search product..." class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.product_id') border-red-500 @enderror" oninput="filterProductList()" onfocus="document.getElementById('productResultsList').classList.remove('hidden')">
 											<!-- Selected product badge -->
 											<div id="productSelectedBadge" class="hidden mt-1.5 p-2 bg-amber-50 border-2 border-amber-400 rounded-lg flex items-center justify-between">
 												<div class="flex items-center gap-2">
@@ -2067,7 +2043,6 @@ function selectCustomer(btn) {
 	document.getElementById('customerSearchInput').value = name;
 	document.getElementById('customerSearchInput').classList.add('hidden');
 	document.getElementById('customerResultsList').classList.add('hidden');
-	document.getElementById('customerClearBtn').classList.remove('hidden');
 
 	// Show selected badge
 	const badge = document.getElementById('customerSelectedBadge');
@@ -2083,7 +2058,6 @@ function clearCustomerSelection() {
 	const input = document.getElementById('customerSearchInput');
 	input.value = '';
 	input.classList.remove('hidden');
-	document.getElementById('customerClearBtn').classList.add('hidden');
 
 	const badge = document.getElementById('customerSelectedBadge');
 	badge.classList.add('hidden');
@@ -2094,6 +2068,80 @@ function clearCustomerSelection() {
 	document.getElementById('customerNoMatch').classList.add('hidden');
 	input.focus();
 }
+
+// Product searchable typeahead
+function filterProductList() {
+	const input = document.getElementById('productSearchInput');
+	const term = input.value.toLowerCase().trim();
+	const options = document.querySelectorAll('.product-option');
+	const noMatch = document.getElementById('productNoMatch');
+	const resultsList = document.getElementById('productResultsList');
+	let count = 0;
+
+	resultsList.classList.remove('hidden');
+	options.forEach(opt => {
+		const name = opt.getAttribute('data-name').toLowerCase();
+		if (name.includes(term)) {
+			opt.classList.remove('hidden');
+			count++;
+		} else {
+			opt.classList.add('hidden');
+		}
+	});
+	noMatch.classList.toggle('hidden', count > 0);
+}
+
+function selectProduct(btn) {
+	const id = btn.getAttribute('data-id');
+	const name = btn.getAttribute('data-name');
+	const price = btn.getAttribute('data-price');
+
+	// Sync the hidden select so pricing JS still works
+	const hiddenSelect = document.getElementById('newItemProduct');
+	hiddenSelect.value = id;
+	hiddenSelect.dispatchEvent(new Event('change')); // triggers pricing auto-fill
+
+	document.getElementById('productSearchInput').value = name;
+	document.getElementById('productSearchInput').classList.add('hidden');
+	document.getElementById('productResultsList').classList.add('hidden');
+
+	// Show selected badge
+	const badge = document.getElementById('productSelectedBadge');
+	badge.classList.remove('hidden');
+	badge.classList.add('flex');
+	document.getElementById('productSelectedName').textContent = name;
+	document.getElementById('productSelectedPrice').textContent = '₱' + parseFloat(price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+	document.getElementById('productInitial').textContent = name.charAt(0).toUpperCase();
+}
+
+function clearProductSelection() {
+	// Reset hidden select
+	const hiddenSelect = document.getElementById('newItemProduct');
+	hiddenSelect.value = '';
+	hiddenSelect.dispatchEvent(new Event('change'));
+
+	const input = document.getElementById('productSearchInput');
+	input.value = '';
+	input.classList.remove('hidden');
+
+	const badge = document.getElementById('productSelectedBadge');
+	badge.classList.add('hidden');
+	badge.classList.remove('flex');
+
+	// Reset all options
+	document.querySelectorAll('.product-option').forEach(opt => opt.classList.remove('hidden'));
+	document.getElementById('productNoMatch').classList.add('hidden');
+	input.focus();
+}
+
+// Close product dropdown on outside click
+document.addEventListener('click', function(e) {
+	const wrapper = document.getElementById('productSearchWrapper');
+	const results = document.getElementById('productResultsList');
+	if (wrapper && results && !wrapper.contains(e.target)) {
+		results.classList.add('hidden');
+	}
+});
 </script>
 
 <script src="{{ asset('js/sales-ajax.js') }}"></script>
