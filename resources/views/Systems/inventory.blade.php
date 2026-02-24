@@ -1500,6 +1500,8 @@
                     .then(movementData => {
                         if (movementData.success) {
                             displayStockLogs(movementData.movements, movementData.summary);
+                            // Re-apply search filter after data reload
+                            filterStockLogs();
                         }
                     })
                     .catch(err => console.error('Error loading logs:', err));
@@ -1519,8 +1521,8 @@
                     return;
                 }
 
-                // Filter Stock IN table
-                const stockInRows = stockInBody.querySelectorAll('tr:not(:has(td[colspan]))');
+                // Filter Stock IN table - use Array.from().filter() for broad browser compatibility
+                const stockInRows = Array.from(stockInBody.querySelectorAll('tr')).filter(row => !row.querySelector('td[colspan]'));
                 stockInRows.forEach(row => {
                     const material = row.cells[1]?.textContent.toLowerCase() || '';
                     const poId = row.cells[3]?.textContent.toLowerCase() || '';
@@ -1532,8 +1534,8 @@
                     row.style.display = matches ? '' : 'none';
                 });
 
-                // Filter Stock OUT table
-                const stockOutRows = stockOutBody.querySelectorAll('tr:not(:has(td[colspan]))');
+                // Filter Stock OUT table - use Array.from().filter() for broad browser compatibility
+                const stockOutRows = Array.from(stockOutBody.querySelectorAll('tr')).filter(row => !row.querySelector('td[colspan]'));
                 stockOutRows.forEach(row => {
                     const material = row.cells[1]?.textContent.toLowerCase() || '';
                     const workOrder = row.cells[3]?.textContent.toLowerCase() || '';
@@ -1570,6 +1572,9 @@
                 if (selectedButton) {
                     selectedButton.classList.add('active');
                 }
+
+                // Re-apply search filter to the newly visible tab
+                filterStockLogs();
             }
             
             function displayStockLogs(movements, summary) {
@@ -1585,7 +1590,7 @@
                 } else {
                     stockInBody.innerHTML = stockInRecords.map(movement => {
                         const poId = movement.po_number || '-';
-                        const userName = movement.user_name || 'System';
+                        const userName = movement.user_name || 'Admin';
                         const quantity = `${Number(movement.quantity).toFixed(2)} ${movement.unit || ''}`.trim();
                         const dateTime = movement.date ? `${movement.date} ${movement.time || ''}`.trim() : '-';
 
@@ -1617,7 +1622,7 @@
                     stockOutBody.innerHTML = stockOut.map(movement => {
                         const quantity = `${Number(movement.quantity).toFixed(2)} ${movement.unit || ''}`;
                         const woId = movement.wo_id || '-';
-                        const userName = movement.user_name || 'System';
+                        const userName = movement.user_name || 'Admin';
 
                         return `
                             <tr class="hover:bg-red-50 transition-all duration-200">
