@@ -638,7 +638,7 @@
                     <form id="addPurchaseOrderForm" method="POST" action="{{ route('procurement.purchase-order.store') }}" onsubmit="return confirmPurchaseOrder(event)">
                         @csrf
                         <div class="space-y-5">
-                            <!-- Supplier Selection -->
+                            <!-- Supplier Selection (Searchable) -->
                             <div>
                                 <label class="block text-base font-bold text-gray-900 mb-3 flex items-center gap-1.5">
                                     <svg class="w-3.5 h-3.5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
@@ -646,12 +646,50 @@
                                     </svg>
                                     Supplier <span class="text-red-500">*</span>
                                 </label>
-                                <select name="supplier_id" class="w-full border-2 border-gray-300 rounded-xl px-3 py-3 text-base font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm @error('supplier_id') border-red-500 @enderror" required>
-                                    <option value="">-- Select Supplier --</option>
-                                    @foreach($suppliers ?? [] as $supplier)
-                                        <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>{{ $supplier->name }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="hidden" name="supplier_id" id="procSupplierIdHidden" value="{{ old('supplier_id') }}" required>
+                                <div class="relative" id="supplierSearchWrapper">
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                            </svg>
+                                        </div>
+                                        <input type="text" id="supplierSearchInput" autocomplete="off" placeholder="Type to search supplier name..." class="w-full pl-10 pr-10 border-2 border-gray-300 rounded-xl px-3 py-3 text-base font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm @error('supplier_id') border-red-500 @enderror" oninput="filterSupplierList()" onfocus="document.getElementById('supplierResultsList').classList.remove('hidden')">
+                                        <button type="button" id="supplierClearBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden" onclick="clearSupplierSelection()">
+                                            <svg class="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <!-- Selected supplier badge -->
+                                    <div id="supplierSelectedBadge" class="hidden mt-2 p-2.5 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm" id="supplierInitial">?</div>
+                                            <div>
+                                                <p class="font-bold text-gray-900 text-sm" id="supplierSelectedName">—</p>
+                                                <p class="text-xs text-gray-500" id="supplierSelectedInfo">—</p>
+                                            </div>
+                                        </div>
+                                        <button type="button" onclick="clearSupplierSelection()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-1 transition-all">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                    <!-- Results dropdown -->
+                                    <div id="supplierResultsList" class="hidden absolute z-[100001] w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+                                        @foreach($suppliers ?? [] as $supplier)
+                                        <button type="button" class="supplier-option w-full flex items-center gap-3 px-3 py-2.5 hover:bg-amber-50 transition-all text-left border-b border-gray-100 last:border-b-0" data-id="{{ $supplier->id }}" data-name="{{ $supplier->name }}" data-contact="{{ $supplier->contact_person }}" onclick="selectSupplier(this)">
+                                            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                                                {{ strtoupper(substr($supplier->name, 0, 1)) }}
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="font-bold text-gray-900 text-sm truncate">{{ $supplier->name }}</p>
+                                                <p class="text-xs text-gray-500">{{ $supplier->contact_person }}</p>
+                                            </div>
+                                        </button>
+                                        @endforeach
+                                        <div id="supplierNoMatch" class="hidden px-4 py-3 text-center text-gray-400 text-sm">No matching supplier found</div>
+                                    </div>
+                                </div>
                                 @error('supplier_id')
                                     <p class="text-red-500 text-xs mt-2 flex items-center gap-1">
                                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -2386,7 +2424,76 @@
         if (archiveStart) archiveStart.addEventListener('change', applyArchiveFilters);
         const archiveEnd = document.getElementById('archiveEndDate');
         if (archiveEnd) archiveEnd.addEventListener('change', applyArchiveFilters);
+
+        // Close supplier dropdown on outside click
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('supplierSearchWrapper');
+            const results = document.getElementById('supplierResultsList');
+            if (wrapper && results && !wrapper.contains(e.target)) {
+                results.classList.add('hidden');
+            }
+        });
     });
+
+    // Supplier searchable typeahead
+    function filterSupplierList() {
+        const input = document.getElementById('supplierSearchInput');
+        const term = input.value.toLowerCase().trim();
+        const options = document.querySelectorAll('.supplier-option');
+        const noMatch = document.getElementById('supplierNoMatch');
+        const resultsList = document.getElementById('supplierResultsList');
+        let count = 0;
+
+        resultsList.classList.remove('hidden');
+        options.forEach(opt => {
+            const name = opt.getAttribute('data-name').toLowerCase();
+            const contact = opt.getAttribute('data-contact').toLowerCase();
+            if (name.includes(term) || contact.includes(term)) {
+                opt.classList.remove('hidden');
+                count++;
+            } else {
+                opt.classList.add('hidden');
+            }
+        });
+        noMatch.classList.toggle('hidden', count > 0);
+    }
+
+    function selectSupplier(btn) {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const contact = btn.getAttribute('data-contact');
+
+        document.getElementById('procSupplierIdHidden').value = id;
+        document.getElementById('supplierSearchInput').value = name;
+        document.getElementById('supplierSearchInput').classList.add('hidden');
+        document.getElementById('supplierResultsList').classList.add('hidden');
+        document.getElementById('supplierClearBtn').classList.remove('hidden');
+
+        // Show selected badge
+        const badge = document.getElementById('supplierSelectedBadge');
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+        document.getElementById('supplierSelectedName').textContent = name;
+        document.getElementById('supplierSelectedInfo').textContent = contact;
+        document.getElementById('supplierInitial').textContent = name.charAt(0).toUpperCase();
+    }
+
+    function clearSupplierSelection() {
+        document.getElementById('procSupplierIdHidden').value = '';
+        const input = document.getElementById('supplierSearchInput');
+        input.value = '';
+        input.classList.remove('hidden');
+        document.getElementById('supplierClearBtn').classList.add('hidden');
+
+        const badge = document.getElementById('supplierSelectedBadge');
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+
+        // Reset all options
+        document.querySelectorAll('.supplier-option').forEach(opt => opt.classList.remove('hidden'));
+        document.getElementById('supplierNoMatch').classList.add('hidden');
+        input.focus();
+    }
     </script>
 </div>
 @endsection
