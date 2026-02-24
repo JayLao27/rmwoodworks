@@ -332,7 +332,7 @@ class InventoryController extends Controller
     public function stockMovementsReport(Request $request)
     {
         $query = InventoryMovement::query()
-            ->with(['item', 'user'])
+            ->with(['user'])
             ->where('item_type', 'material') // Only get materials
             ->orderBy('created_at', 'desc');
 
@@ -351,6 +351,12 @@ class InventoryController extends Controller
 
         $movements = $query->get();
 
+        // Load materials directly (item_type is stored as 'material' plain string, not class name,
+        // so the morphTo 'item' relation won't resolve — load them manually)
+        $materials = Material::whereIn('id', $movements->pluck('item_id')->unique())
+            ->get()
+            ->keyBy('id');
+
         $purchaseOrders = PurchaseOrder::with('supplier')
             ->whereIn('id', $movements->where('reference_type', 'purchase_order')->pluck('reference_id')->unique())
             ->get()
@@ -366,9 +372,10 @@ class InventoryController extends Controller
             ->keyBy('id');
 
         // Format for response
-        $formattedMovements = $movements->map(function ($movement) use ($purchaseOrders, $workOrders) {
-            $itemName = $movement->item?->name ?? 'Unknown Material';
-            $itemUnit = $movement->item?->unit ?? 'unit';
+        $formattedMovements = $movements->map(function ($movement) use ($materials, $purchaseOrders, $workOrders) {
+            $material = $materials->get($movement->item_id);
+            $itemName = $material?->name ?? 'Unknown Material';
+            $itemUnit = $material?->unit ?? 'unit';
 
             // Determine movement label
             $movementLabel = match($movement->movement_type) {
