@@ -648,19 +648,7 @@
                                 </label>
                                 <input type="hidden" name="supplier_id" id="procSupplierIdHidden" value="{{ old('supplier_id') }}" required>
                                 <div class="relative" id="supplierSearchWrapper">
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                            </svg>
-                                        </div>
-                                        <input type="text" id="supplierSearchInput" autocomplete="off" placeholder="Type to search supplier name..." class="w-full pl-10 pr-10 border-2 border-gray-300 rounded-xl px-3 py-3 text-base font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm @error('supplier_id') border-red-500 @enderror" oninput="filterSupplierList()" onfocus="document.getElementById('supplierResultsList').classList.remove('hidden')">
-                                        <button type="button" id="supplierClearBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden" onclick="clearSupplierSelection()">
-                                            <svg class="w-4 h-4 text-gray-400 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-                                    </div>
+                                    <input type="text" id="supplierSearchInput" autocomplete="off" placeholder="Type to search supplier name..." class="w-full border-2 border-gray-300 rounded-xl px-3 py-3 text-base font-medium focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all bg-white shadow-sm @error('supplier_id') border-red-500 @enderror" oninput="filterSupplierList()" onfocus="document.getElementById('supplierResultsList').classList.remove('hidden')">
                                     <!-- Selected supplier badge -->
                                     <div id="supplierSelectedBadge" class="hidden mt-2 p-2.5 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-center justify-between">
                                         <div class="flex items-center gap-2">
@@ -748,7 +736,7 @@
                                 
                                 <div class="bg-white rounded-xl border-2 border-slate-300 p-5 shadow-lg">
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                        <!-- Material Selection -->
+                                        <!-- Material Selection (Searchable) -->
                                         <div>
                                             <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
                                                 <svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
@@ -756,12 +744,44 @@
                                                 </svg>
                                                 Material <span class="text-red-500">*</span>
                                             </label>
-                                            <select id="newItemMaterial" name="items[0][material_id]" class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.material_id') border-red-500 @enderror" required>
+                                            <!-- Hidden select kept for pricing JS compatibility -->
+                                            <select id="newItemMaterial" name="items[0][material_id]" class="hidden" required>
                                                 <option value="">-- Select Material --</option>
                                                 @foreach($materials ?? [] as $material)
                                                     <option value="{{ $material->id }}" data-price="{{ number_format($material->unit_cost,2,'.','') }}">{{ $material->name }}</option>
                                                 @endforeach
                                             </select>
+                                            <div class="relative" id="materialSearchWrapper">
+                                                <input type="text" id="materialSearchInput" autocomplete="off" placeholder="Search material..." class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.material_id') border-red-500 @enderror" oninput="filterMaterialList()" onfocus="document.getElementById('materialResultsList').classList.remove('hidden')">
+                                                <!-- Selected material badge -->
+                                                <div id="materialSelectedBadge" class="hidden mt-1.5 p-2 bg-amber-50 border-2 border-amber-400 rounded-lg flex items-center justify-between">
+                                                    <div class="flex items-center gap-2">
+                                                        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs" id="materialInitial">?</div>
+                                                        <div>
+                                                            <p class="font-bold text-gray-900 text-xs" id="materialSelectedName">—</p>
+                                                            <p class="text-[10px] text-gray-500" id="materialSelectedPrice">—</p>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" onclick="clearMaterialSelection()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-0.5 transition-all">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                    </button>
+                                                </div>
+                                                <!-- Results dropdown -->
+                                                <div id="materialResultsList" class="hidden absolute z-[100001] w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-44 overflow-y-auto">
+                                                    @foreach($materials ?? [] as $material)
+                                                    <button type="button" class="material-option w-full flex items-center gap-2.5 px-3 py-2 hover:bg-amber-50 transition-all text-left border-b border-gray-100 last:border-b-0" data-id="{{ $material->id }}" data-name="{{ $material->name }}" data-price="{{ number_format($material->unit_cost,2,'.','') }}" onclick="selectMaterial(this)">
+                                                        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
+                                                            {{ strtoupper(substr($material->name, 0, 1)) }}
+                                                        </div>
+                                                        <div class="flex-1 min-w-0">
+                                                            <p class="font-bold text-gray-900 text-xs truncate">{{ $material->name }}</p>
+                                                            <p class="text-[10px] text-gray-500">₱{{ number_format($material->unit_cost, 2) }}</p>
+                                                        </div>
+                                                    </button>
+                                                    @endforeach
+                                                    <div id="materialNoMatch" class="hidden px-4 py-3 text-center text-gray-400 text-sm">No matching material found</div>
+                                                </div>
+                                            </div>
                                             @error('items.0.material_id')
                                                 <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                                             @enderror
@@ -903,7 +923,7 @@
     </div>
 
     <!-- Edit Purchase Order Modal -->
-    <div id="editPurchaseOrderModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm hidden z-50" style="display: none; align-items: center; justify-content: center;">
+    <div id="editPurchaseOrderModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm hidden z-50" style="align-items: center; justify-content: center;">
         <div class="p-4 w-full max-w-2xl">
             <div class="bg-amber-50 rounded-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-slate-700">
                 <div class="p-4">
@@ -2467,7 +2487,6 @@
         document.getElementById('supplierSearchInput').value = name;
         document.getElementById('supplierSearchInput').classList.add('hidden');
         document.getElementById('supplierResultsList').classList.add('hidden');
-        document.getElementById('supplierClearBtn').classList.remove('hidden');
 
         // Show selected badge
         const badge = document.getElementById('supplierSelectedBadge');
@@ -2483,7 +2502,6 @@
         const input = document.getElementById('supplierSearchInput');
         input.value = '';
         input.classList.remove('hidden');
-        document.getElementById('supplierClearBtn').classList.add('hidden');
 
         const badge = document.getElementById('supplierSelectedBadge');
         badge.classList.add('hidden');
@@ -2494,6 +2512,80 @@
         document.getElementById('supplierNoMatch').classList.add('hidden');
         input.focus();
     }
+
+    // Material searchable typeahead
+    function filterMaterialList() {
+        const input = document.getElementById('materialSearchInput');
+        const term = input.value.toLowerCase().trim();
+        const options = document.querySelectorAll('.material-option');
+        const noMatch = document.getElementById('materialNoMatch');
+        const resultsList = document.getElementById('materialResultsList');
+        let count = 0;
+
+        resultsList.classList.remove('hidden');
+        options.forEach(opt => {
+            const name = opt.getAttribute('data-name').toLowerCase();
+            if (name.includes(term)) {
+                opt.classList.remove('hidden');
+                count++;
+            } else {
+                opt.classList.add('hidden');
+            }
+        });
+        noMatch.classList.toggle('hidden', count > 0);
+    }
+
+    function selectMaterial(btn) {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const price = btn.getAttribute('data-price');
+
+        // Sync the hidden select so pricing JS still works
+        const hiddenSelect = document.getElementById('newItemMaterial');
+        hiddenSelect.value = id;
+        hiddenSelect.dispatchEvent(new Event('change')); // triggers pricing auto-fill
+
+        document.getElementById('materialSearchInput').value = name;
+        document.getElementById('materialSearchInput').classList.add('hidden');
+        document.getElementById('materialResultsList').classList.add('hidden');
+
+        // Show selected badge
+        const badge = document.getElementById('materialSelectedBadge');
+        badge.classList.remove('hidden');
+        badge.classList.add('flex');
+        document.getElementById('materialSelectedName').textContent = name;
+        document.getElementById('materialSelectedPrice').textContent = '₱' + parseFloat(price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+        document.getElementById('materialInitial').textContent = name.charAt(0).toUpperCase();
+    }
+
+    function clearMaterialSelection() {
+        // Reset hidden select
+        const hiddenSelect = document.getElementById('newItemMaterial');
+        hiddenSelect.value = '';
+        hiddenSelect.dispatchEvent(new Event('change'));
+
+        const input = document.getElementById('materialSearchInput');
+        input.value = '';
+        input.classList.remove('hidden');
+
+        const badge = document.getElementById('materialSelectedBadge');
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+
+        // Reset all options
+        document.querySelectorAll('.material-option').forEach(opt => opt.classList.remove('hidden'));
+        document.getElementById('materialNoMatch').classList.add('hidden');
+        input.focus();
+    }
+
+    // Close material dropdown on outside click
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('materialSearchWrapper');
+        const results = document.getElementById('materialResultsList');
+        if (wrapper && results && !wrapper.contains(e.target)) {
+            results.classList.add('hidden');
+        }
+    });
     </script>
 </div>
 @endsection
