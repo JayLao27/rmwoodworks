@@ -21,9 +21,19 @@
         $borderClass = 'border-red-500'; // Highlight border
     }
 @endphp
-<div onclick="viewWorkOrder({{ $workOrder->id }})" class="p-4 border-2 {{ $borderClass }} rounded-xl hover:border-amber-500 hover:bg-slate-600/50 transition-all shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer work-order-row" data-order-number="{{ $workOrder->order_number }}" data-product-name="{{ $workOrder->product_name }}" data-assigned-to="{{ $workOrder->assigned_to }}" data-status="{{ $workOrder->status }}">
+<div onclick="viewWorkOrder({{ $workOrder->id }})" class="p-4 border-2 {{ $borderClass }} rounded-xl hover:border-amber-500 hover:bg-slate-600/50 transition-all shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer work-order-row" 
+    data-order-number="{{ $workOrder->order_number }}" 
+    data-product-name="{{ $workOrder->product_name }}" 
+    data-customer-name="{{ strtolower($workOrder->salesOrder?->customer?->name ?? '') }}"
+    data-assigned-to="{{ $workOrder->assigned_to }}" 
+    data-status="{{ $workOrder->status }}">
     <div class="flex justify-between items-start">
         <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="px-2 py-0.5 bg-slate-800 text-slate-300 text-[10px] font-bold rounded uppercase tracking-wider border border-slate-600">
+                    {{ $workOrder->salesOrder?->customer?->name ?? 'No Customer' }}
+                </span>
+            </div>
             <h3 class="font-bold text-white text-lg">{{ $workOrder->order_number }} • {{ $workOrder->product_name }}</h3>
             <p class="text-base text-slate-300 font-medium mt-1">Due: {{ $workOrder->due_date->format('m/d/Y') }} • Assigned: {{ $workOrder->assigned_to }}</p>
         </div>
