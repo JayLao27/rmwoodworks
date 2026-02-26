@@ -25,7 +25,7 @@ class AuthController extends Controller
 				'password' => 'required|string',
 			];
 
-			if (app()->isProduction()) {
+			if (filter_var(env('TURNSTILE_ENABLED', false), FILTER_VALIDATE_BOOLEAN)) {
 				$rules['cf-turnstile-response'] = ['required', new Turnstile];
 			}
 
