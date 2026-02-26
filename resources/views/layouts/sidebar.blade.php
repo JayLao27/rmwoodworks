@@ -112,15 +112,18 @@ class="relative z-50"
 
         <!-- Navigation -->
         <nav class="flex-1 px-3 py-2 overflow-y-auto overflow-x-hidden relative z-10 space-y-0.5 custom-scrollbar">
-            <!-- Separator Label -->
+            
+            <!-- ===== MENU SECTION ===== -->
             <div x-show="sidebarOpen" class="px-3 mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-600">Menu</div>
+            <div x-show="!sidebarOpen" class="flex justify-center mb-1">
+                <div class="w-6 h-px bg-slate-700"></div>
+            </div>
 
             <!-- Dashboard -->
             <a href="{{ route('dashboard') }}" 
                class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group relative mb-0.5 {{ request()->routeIs('dashboard') ? 'bg-gradient-to-r from-orange-600/90 to-red-600/90 text-white shadow-lg ring-1 ring-white/10' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}"
                :class="sidebarOpen ? 'justify-start gap-3' : 'justify-center'">
                 
-                <!-- Active Indicator Line (Left) -->
                 @if(request()->routeIs('dashboard'))
                 <div class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-white rounded-r-sm shadow-[0_0_8px_rgba(255,255,255,0.5)]" x-show="sidebarOpen"></div>
                 @endif
@@ -136,16 +139,50 @@ class="relative z-50"
                     Dashboard
                 </span>
 
-                <!-- Tooltip -->
                 <div x-show="!sidebarOpen" 
                      class="absolute left-14 bg-slate-800 text-white text-[10px] px-2 py-1 rounded-md shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none border border-slate-700 whitespace-nowrap z-50">
                     Dashboard
                 </div>
             </a>
 
-            <!-- Modules (Dynamic) -->
+            <!-- Audit Trail -->
+            @if(auth()->user()->hasAnyRole(['admin']))
+            <a href="{{ route('audit-trails') }}" 
+               class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group relative mb-0.5 {{ request()->routeIs('audit-trails*') ? 'bg-gradient-to-r from-orange-600/90 to-red-600/90 text-white shadow-lg ring-1 ring-white/10' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}"
+               :class="sidebarOpen ? 'justify-start gap-3' : 'justify-center'">
+                
+                @if(request()->routeIs('audit-trails*'))
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-white rounded-r-sm shadow-[0_0_8px_rgba(255,255,255,0.5)]" x-show="sidebarOpen"></div>
+                @endif
+
+                <div class="{{ request()->routeIs('audit-trails*') ? 'text-white' : 'text-slate-400 group-hover:text-orange-400' }} transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                </div>
+
+                <span x-show="sidebarOpen" 
+                      class="text-sm font-medium whitespace-nowrap {{ request()->routeIs('audit-trails*') ? 'text-white' : '' }}">
+                    Audit Trail
+                </span>
+
+                <div x-show="!sidebarOpen" 
+                     class="absolute left-14 bg-slate-800 text-white text-[10px] px-2 py-1 rounded-md shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none border border-slate-700 whitespace-nowrap z-50">
+                    Audit Trail
+                </div>
+            </a>
+            @endif
+
+            <!-- ===== SUBSYSTEMS SECTION ===== -->
+            <div class="mt-3 mb-1">
+                <div x-show="sidebarOpen" class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-600">Subsystems</div>
+                <div x-show="!sidebarOpen" class="flex justify-center">
+                    <div class="w-6 h-px bg-slate-700"></div>
+                </div>
+            </div>
+
             @php
-                $menuItems = [
+                $subsystemItems = [
                     [
                         'name' => 'Inventory',
                         'route' => 'inventory',
@@ -181,21 +218,13 @@ class="relative z-50"
                         'roles' => ['admin', 'accounting_staff'],
                         'pattern' => 'accounting*'
                     ],
-                    [
-                        'name' => 'System Notifications',
-                        'route' => 'audit-trails',
-                        'icon' => 'M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9',
-                        'roles' => ['admin'],
-                        'pattern' => 'audit-trails*'
-                    ]
                 ];
             @endphp
-            @foreach($menuItems as $item)
+            @foreach($subsystemItems as $item)
                 @if(auth()->user()->hasAnyRole($item['roles']))
                 <a href="{{ route($item['route']) }}" 
                    class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group relative mb-0.5 {{ request()->routeIs($item['pattern']) ? 'bg-gradient-to-r from-orange-600/90 to-red-600/90 text-white shadow-lg ring-1 ring-white/10' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}"
                    :class="sidebarOpen ? 'justify-start gap-3' : 'justify-center'">
-                    
                     
                     @if(request()->routeIs($item['pattern']))
                     <div class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-white rounded-r-sm shadow-[0_0_8px_rgba(255,255,255,0.5)]" x-show="sidebarOpen"></div>
@@ -212,7 +241,6 @@ class="relative z-50"
                         {{ $item['name'] }}
                     </span>
 
-                    <!-- Tooltip -->
                     <div x-show="!sidebarOpen" 
                          class="absolute left-14 bg-slate-800 text-white text-[10px] px-2 py-1 rounded-md shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none border border-slate-700 whitespace-nowrap z-50">
                         {{ $item['name'] }}
