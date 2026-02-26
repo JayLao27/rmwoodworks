@@ -64,7 +64,9 @@
             transform: scale(1.1);
         }
     </style>
-    <x-turnstile.scripts />
+    @if(filter_var(env('TURNSTILE_ENABLED', false), FILTER_VALIDATE_BOOLEAN))
+        <x-turnstile.scripts />
+    @endif
 </head>
 <body class="min-h-screen bg-[#FDFBF7] relative overflow-hidden flex items-center justify-center">
 
@@ -186,6 +188,7 @@
                         </div>
                     </div>
 
+            @if(filter_var(env('TURNSTILE_ENABLED', false), FILTER_VALIDATE_BOOLEAN))
             <div class="mt-4 flex flex-col items-center justify-center">
             <div class="min-h-[65px] flex items-center justify-center">
                 <x-turnstile
@@ -196,7 +199,8 @@
             @error('cf-turnstile-response')
                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
             @enderror
-        </div>            
+        </div>
+            @endif            
               
                                             
                     <!-- Submit Button -->
