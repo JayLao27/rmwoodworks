@@ -67,25 +67,28 @@ wood-inventory-management/
 ## Screenshots
 
 ### Login
-![Login](login.png)
+![Login](public/images/s-system/Login.png)
 
 ### Dashboard
-![Dashboard](dashboard.png)
+![Dashboard](public/images/s-system/Dashboard.png)
 
 ### Accounting
-![Accounting](accounting.png)
+![Accounting](public/images/s-system/Accounting.png)
 
 ### Inventory
-![Inventory](inventory.png)
+![Inventory](public/images/s-system/Inventory.png)
 
 ### Procurement
-![Procurement](procurement.png)
+![Procurement](public/images/s-system/Procurement.png)
 
 ### Production
-![Production](production.png)
+![Production](public/images/s-system/Production.png)
 
 ### Sales
-![Sales](sales.png)
+![Sales](public/images/s-system/Sales.png)
+
+### Audit Trail
+![Audit Trail](public/images/s-system/Audit-Trail.png)
 
 ## Development Status
 
