@@ -116,36 +116,6 @@ wood-inventory-management/
 9. Build frontend assets: `npm run build`
 10. Start development server: `php artisan serve`
 
-### Cloudflare Turnstile (CAPTCHA)
-
-This application uses [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) CAPTCHA on the login page to prevent bot attacks. Turnstile can be **toggled on or off** via the `TURNSTILE_ENABLED` flag in your `.env` file.
-
-#### Configuration
-
-In your `.env` file, set the following:
-
-```env
-# Set to true to enable Turnstile CAPTCHA, or false to disable it
-TURNSTILE_ENABLED=false
-
-# Your Cloudflare Turnstile keys (required when TURNSTILE_ENABLED=true)
-TURNSTILE_SITE_KEY=your-site-key
-TURNSTILE_SECRET_KEY=your-secret-key
-```
-
-| Setting | Effect |
-|---|---|
-| `TURNSTILE_ENABLED=false` | CAPTCHA is **disabled** — the widget won't render and validation is skipped. Ideal for local development. |
-| `TURNSTILE_ENABLED=true` | CAPTCHA is **enabled** — the Turnstile widget appears on the login page and responses are validated server-side. Use this in production. |
-
-After changing the value, clear the config cache:
-
-```bash
-php artisan config:clear
-```
-
-> 💡 **Tip:** Keep Turnstile **disabled** during local development (`TURNSTILE_ENABLED=false`) since Cloudflare Turnstile does not support `localhost` or `127.0.0.1` as valid hostnames. Enable it in production for security.
-
 ### Default Accounts (Seeder)
 
 Run `php artisan db:seed` to create the following default user accounts:
