@@ -17,12 +17,12 @@ class AccountingController extends Controller
 {
     public function index()
     {
-        // Calculate date range once
+        // Calculate date range 
         $now = Carbon::now();
         $startOfLastMonth = $now->copy()->subMonth()->startOfMonth();
         $endOfLastMonth = $now->copy()->subMonth()->endOfMonth();
 
-        // Get all totals in ONE query operation
+        // Get all totals in one query 
         $incomeTransactions = Accounting::where('transaction_type', 'Income')
             ->selectRaw('SUM(amount) as total, COUNT(*) as count')
             ->first();
@@ -46,7 +46,7 @@ class AccountingController extends Controller
         $lastMonthNetProfitPercentage = $this->lastMonthNetprofit($netProfit);
         $lastMonthExpensesPercentage = $this->lastMonthTotalExpenses($totalExpenses);
 
-        // Calculate current month data (Current Month is February if today is in Feb)
+        // Calculate current month data
         $startOfCurrentMonth = $now->copy()->startOfMonth();
         $endOfCurrentMonth = $now->copy()->endOfMonth();
         
