@@ -28,7 +28,6 @@ class CustomerController extends Controller
 			'email.unique' => 'This email is already registered.',
 		]);
 
-		// Check if at least one contact method is provided
 		if (empty($request->phone) && empty($request->email)) {
 			return redirect()->back()->withInput()->withErrors(['contact' => 'Please provide at least a phone number or email address.']);
 		}
@@ -54,7 +53,6 @@ class CustomerController extends Controller
 			'email.unique' => 'This email is already registered.',
 		]);
 
-		// Check if at least one contact method is provided
 		if (empty($request->phone) && empty($request->email)) {
 			return redirect()->back()->withInput()->withErrors(['contact' => 'Please provide at least a phone number or email address.']);
 		}
