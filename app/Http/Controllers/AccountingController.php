@@ -189,7 +189,7 @@ class AccountingController extends Controller
             ? round((($netProfitThisMonth - $netProfitLastMonth) / abs($netProfitLastMonth)) * 100, 1)
             : ($netProfitThisMonth != 0 ? 100 : 0);
 
-        // Count queries (not full data fetches)
+        // Count queries 
         $inProductionCount = WorkOrder::whereIn('status', ['in_progress', 'quality_check'])->count();
         $overdueWorkOrders = WorkOrder::where('status', '!=', 'completed')
             ->where('due_date', '<', $now->toDateString())
@@ -198,14 +198,12 @@ class AccountingController extends Controller
         $activeOrdersCount = SalesOrder::whereIn('status', ['Pending', 'In production', 'Ready'])->count();
         $newOrdersThisWeek = SalesOrder::where('order_date', '>=', $startOfWeek)->count();
 
-        // Low stock - only fetch the count and top items
         $lowStockCount = Material::whereRaw('current_stock <= minimum_stock')->count();
         $lowStockMaterials = Material::whereRaw('current_stock <= minimum_stock')
             ->orderBy('current_stock')
             ->limit(20)
             ->get();
 
-        // Accounting report: last 6 months - use raw SQL for efficiency
         $salesReportMonths = [];
         $salesReportRevenue = [];
         $salesReportExpenses = [];
@@ -284,7 +282,7 @@ class AccountingController extends Controller
             'description' => 'nullable|string|max:500',
         ]);
 
-        // For Income (Sales Orders)
+        // For Income 
         if ($request->transaction_type === 'Income') {
             $salesOrder = SalesOrder::findOrFail($request->order_id);
             $amountToPay = (float) $request->input('amount');
@@ -303,7 +301,7 @@ class AccountingController extends Controller
                 ]);
             }
 
-            // Create the transaction (don't delete previous ones!)
+            // Create the transaction 
             Accounting::create([
                 'transaction_type' => 'Income',
                 'amount' => $amountToPay,
@@ -325,7 +323,7 @@ class AccountingController extends Controller
                 'paid_amount' => $totalPaid
             ]);
         }
-        // For Expense (Purchase Orders)
+        // For Expense 
         elseif ($request->transaction_type === 'Expense') {
             $purchaseOrder = PurchaseOrder::findOrFail($request->order_id);
             $amountToPay = (float) $request->input('amount');
