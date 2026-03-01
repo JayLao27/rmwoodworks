@@ -28,7 +28,6 @@ class AuditTrailController extends Controller
             return $query;
         };
 
-        // For models that primarily use updated_at for their "last action"
         $filterUpdatedDates = function ($query) use ($dateFrom, $dateTo) {
             if ($dateFrom) {
                 $query->whereDate('updated_at', '>=', $dateFrom);
@@ -46,7 +45,6 @@ class AuditTrailController extends Controller
                 $action = $item->movement_type === 'in' ? 'Stock In' : 'Stock Out';
                 $color = $item->movement_type === 'in' ? 'emerald' : 'orange';
 
-                // If it's a production completion, call it "Completed"
                 if ($item->movement_type === 'in' && str_contains($item->reference_type ?? '', 'WorkOrder')) {
                     $action = 'Completed';
                 }
@@ -143,7 +141,6 @@ class AuditTrailController extends Controller
                 ];
             });
 
-        // Combine and sort by date desc
         $allActivities = $inventory->concat($sales)
             ->concat($accounting)
             ->concat($production)
@@ -151,13 +148,11 @@ class AuditTrailController extends Controller
             ->concat($systemActivities)
             ->sortByDesc('date');
 
-        // Get unique roles for filtering (excluding admin)
         $availableRoles = \App\Models\User::where('role', '!=', 'admin')
             ->distinct()
             ->pluck('role')
             ->toArray();
 
-        // Apply filtering if role is selected
         if ($selectedRole) {
             $activities = $allActivities->filter(function ($activity) use ($selectedRole) {
                 return $activity['user_role'] === $selectedRole;
