@@ -7,7 +7,7 @@
         <div class="max-w-7xl mx-auto">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">System Notifications & Activity</h1>
+                    <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">Audit Trail</h1>
                     <p class="text-sm font-medium text-gray-600 mt-2 flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
                         Unified chronological view of all system notifications and user actions
