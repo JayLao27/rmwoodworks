@@ -47,7 +47,5 @@ class AppServiceProvider extends ServiceProvider
             'purchase_order' => PurchaseOrder::class,
             'work_order' => WorkOrder::class,
         ]);
-
-        \Illuminate\Support\Facades\Route::redirect('/dashboard', '/sales');
     }
 }
