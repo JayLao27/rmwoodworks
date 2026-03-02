@@ -108,8 +108,10 @@ class ProductionController extends Controller
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|integer|min:1',
                 'items.*.selected' => 'nullable|boolean',
+            ], [
+                'assigned_to.required' => 'Please select a team to assign.',
             ]);
-
+        
             $selectedItems = array_filter($validated['items'], function($item) {
                 return isset($item['selected']) && $item['selected'];
             });
@@ -136,7 +138,7 @@ class ProductionController extends Controller
                     ->exists();
 
                 if ($alreadyExists) {
-                    throw new \Exception('A work order for "' . $product->product_name . '" already exists for this sales order.');
+                    continue;
                 }
 
                 // Ensure this product/quantity is from this sales order
@@ -200,17 +202,27 @@ class ProductionController extends Controller
             }
 
             $count = count($createdWorkOrders);
-            $productNames = collect($createdWorkOrders)->pluck('product_name')->implode(', ');
-            \App\Models\SystemActivity::log('Production', 'Work Orders Created', "{$count} work orders created for: {$productNames}.", 'purple');
 
-            // Automatically update Sales Order status to In production
-            if ($salesOrder->status === 'Pending') {
-                $salesOrder->update(['status' => 'In production']);
+            if ($count > 0) {
+                $productNames = collect($createdWorkOrders)->pluck('product_name')->implode(', ');
+                \App\Models\SystemActivity::log('Production', 'Work Orders Created', "{$count} work orders created for: {$productNames}.", 'purple');
+
+                // Automatically update Sales Order status to In production
+                if ($salesOrder->status === 'Pending') {
+                    $salesOrder->update(['status' => 'In production']);
+                }
             }
 
             DB::commit();
 
-            $count = count($createdWorkOrders);
+            if ($count === 0) {
+                $message = 'All selected products already have active work orders.';
+                if ($request->wantsJson()) {
+                    return response()->json(['success' => true, 'message' => $message]);
+                }
+                return redirect()->back()->with('info', $message);
+            }
+
             $message = $count . ' work order' . ($count > 1 ? 's' : '') . ' created. Materials have been deducted from stock.';
             
             if ($request->wantsJson()) {

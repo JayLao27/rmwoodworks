@@ -1441,12 +1441,12 @@
                                 setTimeout(() => location.reload(), 1500);
                             }
                         } else {
-                            showErrorNotification(data.message || 'Error creating work order');
+                            showErrorNotification(data.message);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        showErrorNotification('Error creating work order: ' + error.message);
+                        showErrorNotification(error.message);
                     })
                     .finally(() => {
                         if(submitBtn) {
