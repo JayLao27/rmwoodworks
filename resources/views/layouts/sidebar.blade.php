@@ -66,7 +66,7 @@ class="relative z-50"
         <div class="p-4 relative z-10 border-b border-white/5">
             <div class="flex items-center" :class="sidebarOpen ? 'gap-3' : 'justify-center'">
                 <div class="relative group cursor-default">
-                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
+                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
                     <div class="relative w-10 h-10 bg-gradient-to-br from-[#2d3342] to-[#1e222e] rounded-xl flex items-center justify-center shadow-inner border border-slate-600/50">
                         <img src="{{ asset('images/logo-white.png') }}" alt="EMS" class="w-6 h-6 object-contain drop-shadow-md">
                     </div>
@@ -80,7 +80,7 @@ class="relative z-50"
                     <h1 class="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
                         RM WOOD
                     </h1>
-                    <p class="text-[9px] uppercase tracking-widest text-orange-500 font-semibold leading-none">Inventory System</p>
+                    <p class="text-[9px] uppercase tracking-widest text-yellow-500 font-semibold leading-none">Inventory System</p>
                 </div>
             </div>
         </div>
@@ -90,7 +90,7 @@ class="relative z-50"
             <div class="bg-slate-800/40 backdrop-blur-sm rounded-lg border border-slate-700/30 p-2 transition-all duration-300 group hover:bg-slate-700/50 hover:border-slate-600"
                  :class="sidebarOpen ? 'flex items-center gap-2.5' : 'flex justify-center'">
                 
-                <div class="w-8 h-8 rounded bg-gradient-to-br from-indigo-500 to-purple-600 p-0.5 shadow-lg shadow-indigo-500/20 shrink-0">
+                <div class="w-8 h-8 rounded bg-gradient-to-br from-yellow-500 to-orange-500 p-0.5 shadow-lg shadow-indigo-500/20 shrink-0">
                     <div class="w-full h-full bg-slate-900 rounded-[3px] flex items-center justify-center text-white font-bold text-[10px]">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
