@@ -352,7 +352,7 @@ class AccountingController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            // Update payment status for purchase order
+            // Update payment status in purchase order
             $totalPaid = (float) Accounting::where('purchase_order_id', $request->order_id)
                 ->where('transaction_type', 'Expense')
                 ->sum('amount');
@@ -405,20 +405,20 @@ class AccountingController extends Controller
             ->whereBetween('date', [$lastMonthStart, $lastMonthEnd])
             ->sum('amount');
         
-        // Calculate percentage
+        // Calculate the percentage
         $expensesPercentage = $totalExpenses > 0 ? ($lastMonthExpenses / $totalExpenses) * 100 : 0;
         
         return round($expensesPercentage, 2);
     }
     Public function lastMonthRevenue( $totalRevenue )
      {
-            // Get last month's revenue from transactions
+            // Get last month's revenue 
             $lastMonthStart = now()->subMonth()->startOfMonth();
             $lastMonthEnd = now()->subMonth()->endOfMonth();
             $lastMonthRevenue = Accounting::where('transaction_type', 'Income')
                 ->whereBetween('date', [$lastMonthStart, $lastMonthEnd])
                 ->sum('amount');
-            // Calculate percentage
+            // Calculate the percentage
             $revenuePercentage = $totalRevenue > 0 ? ($lastMonthRevenue / $totalRevenue) * 100 : 0;
             return round($revenuePercentage, 2);
     }
@@ -442,7 +442,7 @@ class AccountingController extends Controller
         ];
 
 
-        // Or get individual sales orders with their totals
+       
         $salesOrders = SalesOrder::whereBetween('order_date', [$startDate, $endDate])
             ->get(['id', 'order_number', 'total_amount', 'order_date']);
 
@@ -451,7 +451,7 @@ class AccountingController extends Controller
 
     public function exportTransactionReceipt($transactionId)
     {
-        // Extract the actual ID from the format TO-YYYY-XXX
+        // Extract the actual ID 
         $parts = explode('-', $transactionId);
         $id = isset($parts[2]) ? (int)$parts[2] : null;
         
