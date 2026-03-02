@@ -64,7 +64,7 @@
             transform: scale(1.1);
         }
     </style>
-    @if(filter_var(env('TURNSTILE_ENABLED', false), FILTER_VALIDATE_BOOLEAN))
+    @if(config('services.turnstile.enabled'))
         <x-turnstile.scripts />
     @endif
 </head>
@@ -188,7 +188,7 @@
                         </div>
                     </div>
 
-            @if(filter_var(env('TURNSTILE_ENABLED', false), FILTER_VALIDATE_BOOLEAN))
+            @if(config('services.turnstile.enabled'))
             <div class="mt-4 flex flex-col items-center justify-center">
             <div class="min-h-[65px] flex items-center justify-center">
                 <x-turnstile
