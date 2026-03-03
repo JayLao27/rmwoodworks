@@ -1053,7 +1053,7 @@
     </div>
 
     <!-- Confirmation Modal for Purchase Order -->
-    <div id="confirmPurchaseOrderModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001] flex" onclick="if(event.target === this) closeConfirmPurchaseOrder()">
+    <div id="confirmPurchaseOrderModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001]" onclick="if(event.target === this) closeConfirmPurchaseOrder()">
         <div class="flex items-center justify-center min-h-screen p-3 w-full">
             <div class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700 z-[100003]">
                 <div class="sticky top-0 bg-gradient-to-r from-slate-700 to-slate-800 p-3 text-white rounded-t-0xl z-[100002]">
@@ -1078,7 +1078,7 @@
     </div>
 
     <!-- Confirmation Modal for Supplier -->
-    <div id="confirmSupplierModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001] flex" onclick="if(event.target === this) closeConfirmSupplier()">
+    <div id="confirmSupplierModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001]" onclick="if(event.target === this) closeConfirmSupplier()">
         <div class="flex items-center justify-center min-h-screen p-3 w-full">
             <div class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700 z-[100003]">
                 <div class="sticky top-0 bg-gradient-to-r from-slate-700 to-slate-800 p-3 text-white rounded-t-xl z-[100002]">
@@ -1103,7 +1103,7 @@
     </div>
 
     <!-- Delete Purchase Order Confirmation Modal -->
-    <div id="deleteOrderModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001] flex" onclick="if(event.target === this) closeDeleteOrder()">
+    <div id="deleteOrderModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001]" onclick="if(event.target === this) closeDeleteOrder()">
         <div class="flex items-center justify-center min-h-screen p-3 w-full">
             <div class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700 z-[100003]">
                 <div class="sticky top-0 bg-gradient-to-r from-slate-700 to-slate-800 p-3 text-white rounded-t-xl z-[100002]">
@@ -1128,7 +1128,7 @@
     </div>
 
     <!-- Delete Supplier Confirmation Modal -->
-    <div id="deleteSupplierModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001] flex" onclick="if(event.target === this) closeDeleteSupplier()">
+    <div id="deleteSupplierModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001]" onclick="if(event.target === this) closeDeleteSupplier()">
         <div class="flex items-center justify-center min-h-screen p-3 w-full">
             <div class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700 z-[100003]">
                 <div class="sticky top-0 bg-gradient-to-r from-slate-700 to-slate-800 p-3 text-white rounded-t-xl z-[100002]">
