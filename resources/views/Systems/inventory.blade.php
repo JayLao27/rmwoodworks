@@ -12,7 +12,7 @@
 			</div>
 			<div class="flex space-x-3">
 				@php
-					$pendingReceiveCount = \App\Models\PurchaseOrder::where('status', '!=', 'received')->count();
+					$pendingReceiveCount = \App\Models\PurchaseOrder::where('status', '!=', 'received')->where('status', '!=', 'cancelled')->count();
 				@endphp
 				<button onclick="openReceiveStockModal()" class="relative px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 font-medium text-sm">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,8 +43,8 @@
 					<div class="flex justify-between items-start">
 						<div>
 							<p class="text-slate-300 text-xs font-semibold uppercase tracking-wide">Total Materials</p>
-							<p class="text-2xl font-bold mt-2 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">{{ $totalMaterials ?? 10 }}</p>
-							<p class="text-slate-300 text-xs font-medium mt-1">{{ $totalMaterials ?? 10 }} Items</p>
+							<p class="text-2xl font-bold mt-2 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent" data-metric="totalMaterials">{{ $totalMaterials ?? 10 }}</p>
+							<p class="text-slate-300 text-xs font-medium mt-1"><span data-metric="totalMaterials-sub">{{ $totalMaterials ?? 10 }}</span> Items</p>
 						</div>
 						<div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
 							@include('components.icons.package', ['class' => 'w-5 h-5 text-amber-400'])
@@ -63,8 +63,8 @@
 					<div class="flex justify-between items-start">
 						<div>
 							<p class="text-slate-300 text-xs font-semibold uppercase tracking-wide">Low Stock Alerts</p>
-							<p class="text-2xl font-bold mt-2 {{ ($lowStockAlerts ?? 3) > 4 ? 'text-red-400' : 'bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent' }}">{{ $lowStockAlerts ?? 3 }}</p>
-							<p class="text-xs font-medium mt-1 {{ ($lowStockAlerts ?? 3) > 4 ? 'text-red-300' : 'text-slate-300' }}">{{ $lowStockAlerts ?? 3 }} Items</p>
+							<p class="text-2xl font-bold mt-2 {{ ($lowStockAlerts ?? 3) > 4 ? 'text-red-400' : 'bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent' }}" data-metric="lowStockAlerts">{{ $lowStockAlerts ?? 3 }}</p>
+							<p class="text-xs font-medium mt-1 {{ ($lowStockAlerts ?? 3) > 4 ? 'text-red-300' : 'text-slate-300' }}"><span data-metric="lowStockAlerts-sub">{{ $lowStockAlerts ?? 3 }}</span> Items</p>
 						</div>
 						<div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
 							@include('components.icons.cart', ['class' => ($lowStockAlerts ?? 3) > 4 ? 'w-5 h-5 text-red-400 animate-pulse' : 'w-5 h-5 text-amber-400'])
@@ -83,7 +83,7 @@
 					<div class="flex justify-between items-start">
 						<div>
 							<p class="text-slate-300 text-xs font-semibold uppercase tracking-wide">New Orders</p>
-							<p class="text-2xl font-bold mt-2 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">{{ $newOrders ?? 2 }}</p>
+							<p class="text-2xl font-bold mt-2 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent" data-metric="newOrders">{{ $newOrders ?? 2 }}</p>
 							<p class="text-slate-300 text-xs font-medium mt-1">Finished products</p>
 						</div>
 						<div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
@@ -103,7 +103,7 @@
 					<div class="flex justify-between items-start">
 						<div>
 							<p class="text-slate-300 text-xs font-semibold uppercase tracking-wide">Pending Deliveries</p>
-							<p class="text-2xl font-bold mt-2 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">{{ $pendingDeliveries ?? 3 }}</p>
+							<p class="text-2xl font-bold mt-2 bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent" data-metric="pendingDeliveries">{{ $pendingDeliveries ?? 3 }}</p>
 							<p class="text-slate-300 text-xs font-medium mt-1">Awaiting delivery</p>
 						</div>
 						<div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
@@ -181,7 +181,7 @@
                 <!-- Materials Table -->
                 <div id="materials-table" class="space-y-3 overflow-y-auto custom-scrollbar" style="max-height:60vh;">
                     @forelse($materials ?? [] as $material)
-                    <div class="p-4 border-2 border-slate-600 rounded-xl hover:border-amber-500 hover:bg-slate-600/50 transition-all shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer" data-name="{{ $material->name }}" data-category="{{ $material->category }}" onclick="openStockModal('material', {{ $material->id }})">
+                    <div class="p-4 border-2 border-slate-600 rounded-xl hover:border-amber-500 hover:bg-slate-600/50 transition-all shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer" data-name="{{ $material->name }}" data-category="{{ $material->category }}" data-id="{{ $material->id }}" data-type="material" onclick="openStockModal('material', {{ $material->id }})">
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
                                 <h3 class="font-bold text-white text-lg">{{ $material->name }}</h3>
@@ -228,7 +228,7 @@
                 <!-- Products Table -->
                 <div id="products-table" class="space-y-3 overflow-y-auto custom-scrollbar hidden" style="max-height:60vh;">
                     @forelse($products ?? [] as $product)
-                    <div class="p-4 border-2 border-slate-600 rounded-xl hover:border-amber-500 hover:bg-slate-600/50 transition-all shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer" data-name="{{ $product->product_name }}" data-category="Products" onclick="openStockModal('product', {{ $product->id }})">
+                    <div class="p-4 border-2 border-slate-600 rounded-xl hover:border-amber-500 hover:bg-slate-600/50 transition-all shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer" data-name="{{ $product->product_name }}" data-category="Products" data-id="{{ $product->id }}" data-type="product" onclick="openStockModal('product', {{ $product->id }})">
                         <div class="flex justify-between items-start">
                             <div class="flex-1">
                                 <h3 class="font-bold text-white text-lg">{{ $product->product_name }}</h3>
@@ -551,7 +551,7 @@
         </div>
 
         <!-- Stock View Modal -->
-        <div id="stockModal" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm hidden overflow-y-auto flex items-center justify-center z-50" onclick="if(event.target === this) closeStockModal()">
+        <div id="stockModal" class="modal-overlay fixed inset-0 bg-black/60 backdrop-blur-sm z-50 overflow-y-auto flex items-center justify-center" style="display:none;" onclick="if(event.target === this) closeStockModal()">
             <div id="stockModalContent" class="modal-content bg-amber-50 rounded-xl max-w-4xl w-[92%] my-6 max-h-[80vh] overflow-y-auto shadow-2xl transform transition-all border-2 border-slate-700" onclick="event.stopPropagation()">
                 <div class="p-2">
                     <!-- Header -->
@@ -819,7 +819,7 @@
         </div>
 
         <!-- Delete Confirmation Modal -->
-        <div id="deleteConfirmationModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+        <div id="deleteConfirmationModal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center" style="display:none;">
             <div class="bg-white rounded-2xl max-w-md w-full mx-4 shadow-2xl overflow-hidden border-2 border-red-200">
                 <!-- Header with Destructive Theme -->
                 <div class="bg-gradient-to-r from-red-50 to-red-100 px-6 py-4 border-b-2 border-red-200">
@@ -893,7 +893,7 @@
         </div>
 
         <!-- Generic Confirmation Modal (reused for add/update/remove actions) -->
-        <div id="genericConfirmModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-50 flex">
+        <div id="genericConfirmModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-50 flex" style="display:none;">
             <div class="flex items-center justify-center min-h-screen p-3 w-full">
                 <div id="genericConfirmContainer" class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700">
                     <div id="genericConfirmHeader" class="sticky top-0 bg-gradient-to-r from-red-600 to-red-700 p-3 text-white rounded-t-xl z-10">
@@ -1206,16 +1206,8 @@
                 }
             }
 
-            document.getElementById('addProductForm')?.addEventListener('submit', function() {
-                localStorage.setItem('activeInventoryTab', 'products');
-            });
-
-            document.getElementById('editProductForm')?.addEventListener('submit', function() {
-                localStorage.setItem('activeInventoryTab', 'products');
-            });
-
             function openStockModal(type, id) {
-                document.getElementById('stockModal').classList.remove('hidden');
+                document.getElementById('stockModal').style.display = 'flex';
                 
                 fetch(`/inventory/${id}/details?type=${type}`)
                     .then(response => response.json())
@@ -1322,7 +1314,7 @@
             }
 
             function closeStockModal() {
-                document.getElementById('stockModal').classList.add('hidden');
+                document.getElementById('stockModal').style.display = 'none';
             }
 
             let deleteConfirmState = {
@@ -1333,7 +1325,7 @@
 
             function openDeleteModal(type, id, name) {
                 deleteConfirmState = { type, id, name };
-                document.getElementById('deleteConfirmationModal').classList.remove('hidden');
+                document.getElementById('deleteConfirmationModal').style.display = 'flex';
                 document.getElementById('deleteConfirmationInput').value = '';
                 document.getElementById('deleteConfirmButton').disabled = true;
                 
@@ -1344,31 +1336,51 @@
             }
 
             function closeDeleteModal() {
-                document.getElementById('deleteConfirmationModal').classList.add('hidden');
+                document.getElementById('deleteConfirmationModal').style.display = 'none';
                 deleteConfirmState = { type: null, id: null, name: null };
                 document.getElementById('deleteConfirmationInput').value = '';
                 document.getElementById('deleteConfirmButton').disabled = true;
             }
 
             function confirmDelete() {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/inventory/${deleteConfirmState.id}/${deleteConfirmState.type}`;
-                
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'DELETE';
-                
-                const tokenInput = document.createElement('input');
-                tokenInput.type = 'hidden';
-                tokenInput.name = '_token';
-                tokenInput.value = '{{ csrf_token() }}';
-                
-                form.appendChild(methodInput);
-                form.appendChild(tokenInput);
-                document.body.appendChild(form);
-                form.submit();
+                const deleteBtn = document.getElementById('deleteConfirmButton');
+                if (deleteBtn) {
+                    deleteBtn.disabled = true;
+                    deleteBtn.innerHTML = '<svg class="inline w-4 h-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>Deleting...';
+                }
+
+                fetch(`/inventory/${deleteConfirmState.id}/${deleteConfirmState.type}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ _method: 'DELETE' })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const card = document.querySelector(`[data-id="${deleteConfirmState.id}"][data-type="${deleteConfirmState.type}"]`);
+                        if (card) {
+                            card.style.transition = 'opacity 0.3s ease, transform 0.3s ease, max-height 0.3s ease';
+                            card.style.opacity = '0';
+                            card.style.transform = 'scale(0.95)';
+                            setTimeout(() => card.remove(), 310);
+                        }
+                        closeDeleteModal();
+                        showSuccessNotification(data.message || 'Item deleted successfully!');
+                        if (data.metrics) updateMetrics(data.metrics);
+                    } else {
+                        showErrorNotification(data.message || 'Failed to delete item.');
+                        if (deleteBtn) { deleteBtn.disabled = false; deleteBtn.textContent = 'Delete Permanently'; }
+                    }
+                })
+                .catch(() => {
+                    showErrorNotification('An error occurred while deleting the item.');
+                    if (deleteBtn) { deleteBtn.disabled = false; deleteBtn.textContent = 'Delete Permanently'; }
+                });
             }
 
             // Update delete button state based on input
@@ -1434,44 +1446,225 @@
                     confirmBtn.className = baseClasses + ' bg-red-600 text-white hover:bg-red-700';
                 }
 
-                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
             }
 
             function closeGenericConfirm() {
                 const modal = document.getElementById('genericConfirmModal');
                 if (!modal) return;
-                modal.classList.add('hidden');
+                modal.style.display = 'none';
             }
 
-            // Attach form submit interceptors that open the modal
+            // ─────────────────────────────────────────────────────────────────────────
+            // AJAX helpers
+            // ─────────────────────────────────────────────────────────────────────────
+
+            /** Escape a string for safe HTML insertion */
+            function escHtml(str) {
+                return String(str)
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            }
+
+            /** Format a number with 2 decimals + commas */
+            function phpNum(n) {
+                return Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+
+            /** Update the four metric cards from a metrics object */
+            function updateMetrics(m) {
+                document.querySelectorAll('[data-metric="totalMaterials"], [data-metric="totalMaterials-sub"]').forEach(el => el.textContent = m.totalMaterials);
+                document.querySelectorAll('[data-metric="lowStockAlerts"], [data-metric="lowStockAlerts-sub"]').forEach(el => el.textContent = m.lowStockAlerts);
+                document.querySelectorAll('[data-metric="newOrders"]').forEach(el => el.textContent = m.newOrders);
+                document.querySelectorAll('[data-metric="pendingDeliveries"]').forEach(el => el.textContent = m.pendingDeliveries);
+            }
+
+            /** Build and return a material card DOM element */
+            function renderMaterialCard(item) {
+                const isLow = item.is_low_stock;
+                const badge = isLow
+                    ? '<span class="px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-bold rounded-xl shadow-lg">Low Stock</span>'
+                    : '<span class="px-3 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold rounded-xl shadow-lg">In Stock</span>';
+                const div = document.createElement('div');
+                div.className = 'p-4 border-2 border-slate-600 rounded-xl hover:border-amber-500 hover:bg-slate-600/50 transition-all shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer';
+                div.setAttribute('data-name', item.name);
+                div.setAttribute('data-category', item.category);
+                div.setAttribute('data-id', item.id);
+                div.setAttribute('data-type', 'material');
+                div.onclick = () => openStockModal('material', item.id);
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-white text-lg">${escHtml(item.name)}</h3>
+                            <p class="text-sm text-slate-300 font-medium mt-1">${escHtml(item.supplier_name)} &bull; ${escHtml(item.unit)}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            ${badge}
+                            <span class="text-white font-bold text-lg">&#8369;${phpNum(item.unit_cost)}</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2 text-sm">
+                        <div>
+                            <span class="text-slate-400 font-medium text-xs">Current Stock</span>
+                            <p class="text-white font-bold text-lg mt-1">${item.current_stock} ${escHtml(item.unit)}</p>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 font-medium text-xs">Min Stock</span>
+                            <p class="text-white font-bold text-lg mt-1">${item.minimum_stock} ${escHtml(item.unit)}</p>
+                        </div>
+                        <div class="flex items-center space-x-2 justify-end">
+                            <button onclick="event.stopPropagation(); openDeleteModal('material', ${item.id}, '${item.name.replace(/'/g, "\\'").replace(/"/g,'&quot;')}')" class="p-2.5 hover:bg-red-500/20 rounded-lg transition-all group" title="Delete">
+                                <svg class="w-5 h-5 text-red-400 group-hover:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>`;
+                return div;
+            }
+
+            /** Build and return a product card DOM element */
+            function renderProductCard(item) {
+                const div = document.createElement('div');
+                div.className = 'p-4 border-2 border-slate-600 rounded-xl hover:border-amber-500 hover:bg-slate-600/50 transition-all shadow-lg hover:shadow-xl backdrop-blur-sm cursor-pointer';
+                div.setAttribute('data-name', item.product_name);
+                div.setAttribute('data-category', item.category);
+                div.setAttribute('data-id', item.id);
+                div.setAttribute('data-type', 'product');
+                div.onclick = () => openStockModal('product', item.id);
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-white text-lg">${escHtml(item.product_name)}</h3>
+                            <p class="text-sm text-slate-300 font-medium mt-1">Finished Product</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-white font-bold text-lg">&#8369;${phpNum(item.selling_price)}</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-sm">
+                        <div>
+                            <span class="text-slate-400 font-medium text-xs">Production Cost</span>
+                            <p class="text-white font-bold text-lg mt-1">&#8369;${phpNum(item.production_cost)}</p>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 font-medium text-xs">Selling Price</span>
+                            <p class="text-white font-bold text-lg mt-1">&#8369;${phpNum(item.selling_price)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-2 justify-end">
+                        <button onclick="event.stopPropagation(); openEditProductModal(${item.id})" class="p-2.5 hover:bg-slate-500 rounded-lg transition-all group" title="Edit">
+                            <svg class="w-5 h-5 text-amber-400 group-hover:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                        </button>
+                        <button onclick="event.stopPropagation(); openDeleteModal('product', ${item.id}, '${item.product_name.replace(/'/g, "\\'").replace(/"/g,'&quot;')}')" class="p-2.5 hover:bg-red-500/20 rounded-lg transition-all group" title="Delete">
+                            <svg class="w-5 h-5 text-red-400 group-hover:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>`;
+                return div;
+            }
+
+            /**
+             * Generic AJAX form submit helper.
+             * Serialises FormData, sends via fetch, calls onSuccess(data) on success.
+             */
+            function submitInventoryForm(form, url, method, onSuccess) {
+                const submitBtn = form.querySelector('[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.dataset.originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Saving...';
+                }
+                const formData = new FormData(form);
+                if (method !== 'POST') formData.append('_method', method);
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: formData
+                })
+                .then(r => { if (!r.ok) return r.json().then(d => { throw d; }); return r.json(); })
+                .then(data => {
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.originalText || 'Save'; }
+                    if (data.success) { onSuccess(data); }
+                    else { showErrorNotification(data.message || 'An error occurred.'); }
+                })
+                .catch(err => {
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.originalText || 'Save'; }
+                    const msg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'An error occurred.');
+                    showErrorNotification(msg);
+                });
+            }
+
+            // ── Attach form submit interceptors (AJAX) ────────────────────────────────
             document.addEventListener('DOMContentLoaded', function() {
+                // Add Product
                 const addForm = document.getElementById('addProductForm');
                 if (addForm) {
                     addForm.addEventListener('submit', function(e) {
                         e.preventDefault();
                         openGenericConfirm('Add Product', 'Are you sure you want to add this product with the listed materials?', function() {
-                            addForm.submit();
+                            submitInventoryForm(addForm, '{{ route("inventory.store") }}', 'POST', function(data) {
+                                if (data.item) {
+                                    const table = document.getElementById('products-table');
+                                    const empty = table.querySelector('.py-12');
+                                    if (empty) empty.remove();
+                                    table.prepend(renderProductCard(data.item));
+                                }
+                                closeAddProductModal();
+                                showSuccessNotification(data.message || 'Product added successfully!');
+                                localStorage.setItem('activeInventoryTab', 'products');
+                                showTab('products');
+                            });
                         }, 'positive');
                     });
                 }
 
-                // Add Item (material) form confirmation
+                // Add Material
                 const addItemForm = document.getElementById('addItemForm');
                 if (addItemForm) {
                     addItemForm.addEventListener('submit', function(e) {
                         e.preventDefault();
                         openGenericConfirm('Add Material', 'Are you sure you want to add this material?', function() {
-                            addItemForm.submit();
+                            submitInventoryForm(addItemForm, '{{ route("inventory.store") }}', 'POST', function(data) {
+                                if (data.item) {
+                                    const table = document.getElementById('materials-table');
+                                    const empty = table.querySelector('.py-12');
+                                    if (empty) empty.remove();
+                                    table.prepend(renderMaterialCard(data.item));
+                                }
+                                closeAddItemModal();
+                                showSuccessNotification(data.message || 'Material added successfully!');
+                                if (data.metrics) updateMetrics(data.metrics);
+                                showTab('materials');
+                            });
                         }, 'positive');
                     });
                 }
 
+                // Edit Product
                 const editForm = document.getElementById('editProductForm');
                 if (editForm) {
                     editForm.addEventListener('submit', function(e) {
                         e.preventDefault();
                         openGenericConfirm('Update Product', 'Are you sure you want to update this product and its materials?', function() {
-                            editForm.submit();
+                            const url = editForm.getAttribute('action');
+                            submitInventoryForm(editForm, url, 'PUT', function(data) {
+                                if (data.item) {
+                                    const oldCard = document.querySelector(`[data-id="${data.item.id}"][data-type="product"]`);
+                                    if (oldCard) oldCard.replaceWith(renderProductCard(data.item));
+                                }
+                                closeEditProductModal();
+                                showSuccessNotification(data.message || 'Product updated successfully!');
+                                localStorage.setItem('activeInventoryTab', 'products');
+                            });
                         }, 'positive');
                     });
                 }
@@ -1700,7 +1893,7 @@
                                     </div>
 
                                     @php
-                                        $purchaseOrders = \App\Models\PurchaseOrder::with('supplier')->where('status', '!=', 'received')->get();
+                                        $purchaseOrders = \App\Models\PurchaseOrder::with('supplier')->where('status', '!=', 'received')->where('status', '!=', 'cancelled')->get();
                                     @endphp
 
                                     <!-- PO Cards Grid -->
