@@ -610,104 +610,124 @@ $paymentBg = [
 
 								<!-- Product Selection Section -->
 								<div class="pt-4 border-t-2 border-gray-300">
-									<h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-1.5">
-										<span class="w-1 h-6 bg-amber-500 rounded"></span>
-										Order Items
-									</h4>
-
-									<div class="bg-white rounded-xl border-2 border-slate-300 p-5 shadow-lg">
-										<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-											<!-- Product Selection (Searchable) -->
-									<div>
-										<label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
-											<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-												<path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+									<div class="flex items-center justify-between mb-4">
+										<h4 class="text-xl font-bold text-gray-900 flex items-center gap-1.5">
+											<span class="w-1 h-6 bg-amber-500 rounded"></span>
+											Order Items
+										</h4>
+										<button type="button" onclick="addSalesProductRow()" class="px-3 py-2 bg-green-600 text-white text-xs rounded-xl hover:bg-green-700 font-bold shadow-lg transition-all flex items-center gap-1">
+											<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+												<path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
 											</svg>
-											Product <span class="text-red-500">*</span>
-										</label>
-										<!-- Hidden select kept for pricing JS compatibility -->
-										<select id="newItemProduct" name="items[0][product_id]" class="hidden" required>
-											<option value="">-- Select Product --</option>
-											@foreach($products as $p)
-											<option value="{{ $p->id }}" data-price="{{ number_format($p->selling_price,2,'.','') }}" data-max="{{ $p->max_producible ?? '' }}">{{ $p->product_name }}</option>
-											@endforeach
-										</select>
-										<div class="relative" id="productSearchWrapper">
-											<input type="text" id="productSearchInput" autocomplete="off" placeholder="Search product..." class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.product_id') border-red-500 @enderror" oninput="filterProductList()" onfocus="document.getElementById('productResultsList').classList.remove('hidden')">
-											<!-- Selected product badge -->
-											<div id="productSelectedBadge" class="hidden mt-1.5 p-2 bg-amber-50 border-2 border-amber-400 rounded-lg flex items-center justify-between">
-												<div class="flex items-center gap-2">
-													<div class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs" id="productInitial">?</div>
-													<div>
-														<p class="font-bold text-gray-900 text-xs" id="productSelectedName">—</p>
-														<p class="text-[10px] text-gray-500" id="productSelectedPrice">—</p>
-													</div>
-												</div>
-												<button type="button" onclick="clearProductSelection()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-0.5 transition-all">
-													<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-												</button>
-											</div>
-											<!-- Results dropdown -->
-											<div id="productResultsList" class="hidden absolute z-[100001] w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-44 overflow-y-auto">
-												@foreach($products as $p)
-												<button type="button" class="product-option w-full flex items-center gap-2.5 px-3 py-2 hover:bg-amber-50 transition-all text-left border-b border-gray-100 last:border-b-0" data-id="{{ $p->id }}" data-name="{{ $p->product_name }}" data-price="{{ number_format($p->selling_price,2,'.','') }}" onclick="selectProduct(this)">
-													<div class="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
-														{{ strtoupper(substr($p->product_name, 0, 1)) }}
-													</div>
-													<div class="flex-1 min-w-0">
-														<p class="font-bold text-gray-900 text-xs truncate">{{ $p->product_name }}</p>
-														<p class="text-[10px] text-gray-500">₱{{ number_format($p->selling_price, 2) }}</p>
-													</div>
-												</button>
-												@endforeach
-												<div id="productNoMatch" class="hidden px-4 py-3 text-center text-gray-400 text-sm">No matching product found</div>
-											</div>
-										</div>
-										@error('items.0.product_id')
-										<p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-										@enderror
+											+ Add Product
+										</button>
 									</div>
 
-											<!-- Quantity -->
-											<div>
-												<label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
-													<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-														<path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-													</svg>
-													Quantity <span class="text-red-500">*</span>
-												</label>
-												<input id="newItemQty" type="number" min="1" name="items[0][quantity]" class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.quantity') border-red-500 @enderror" placeholder="1" value="{{ old('items.0.quantity') }}" required>
-												@error('items.0.quantity')
-												<p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-												@enderror
-												<p id="newItemQtyError" class="text-red-500 text-xs mt-1 hidden"></p>
+									<div id="salesItemsContainer">
+										<div class="bg-white rounded-xl border-2 border-slate-300 p-5 shadow-lg mb-3 sales-item-row" data-index="0">
+											<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+												<!-- Product Selection (Searchable) -->
+												<div>
+													<label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
+														<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+															<path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+														</svg>
+														Product <span class="text-red-500">*</span>
+													</label>
+													<select name="items[0][product_id]" class="hidden sales-product-select" required>
+														<option value="">-- Select Product --</option>
+														@foreach($products as $p)
+														<option value="{{ $p->id }}" data-price="{{ number_format($p->selling_price,2,'.','') }}" data-max="{{ $p->max_producible ?? '' }}">{{ $p->product_name }}</option>
+														@endforeach
+													</select>
+													<div class="relative sales-product-search-wrapper">
+														<input type="text" autocomplete="off" placeholder="Search product..." class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all sales-product-search @error('items.0.product_id') border-red-500 @enderror" oninput="filterSalesProductList(this)" onfocus="this.closest('.sales-product-search-wrapper').querySelector('.sales-product-results').classList.remove('hidden')">
+														<div class="hidden mt-1.5 p-2 bg-amber-50 border-2 border-amber-400 rounded-lg flex items-center justify-between sales-product-badge">
+															<div class="flex items-center gap-2">
+																<div class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs sales-product-initial">?</div>
+																<div>
+																	<p class="font-bold text-gray-900 text-xs sales-product-selected-name">—</p>
+																	<p class="text-[10px] text-gray-500 sales-product-selected-price">—</p>
+																</div>
+															</div>
+															<button type="button" onclick="clearSalesProductSelection(this)" class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-0.5 transition-all">
+																<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+															</button>
+														</div>
+														<div class="hidden absolute z-[100001] w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-44 overflow-y-auto sales-product-results">
+															@foreach($products as $p)
+															<button type="button" class="sales-product-option w-full flex items-center gap-2.5 px-3 py-2 hover:bg-amber-50 transition-all text-left border-b border-gray-100 last:border-b-0" data-id="{{ $p->id }}" data-name="{{ $p->product_name }}" data-price="{{ number_format($p->selling_price,2,'.','') }}" onclick="selectSalesProduct(this)">
+																<div class="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
+																	{{ strtoupper(substr($p->product_name, 0, 1)) }}
+																</div>
+																<div class="flex-1 min-w-0">
+																	<p class="font-bold text-gray-900 text-xs truncate">{{ $p->product_name }}</p>
+																	<p class="text-[10px] text-gray-500">₱{{ number_format($p->selling_price, 2) }}</p>
+																</div>
+															</button>
+															@endforeach
+															<div class="sales-product-no-match hidden px-4 py-3 text-center text-gray-400 text-sm">No matching product found</div>
+														</div>
+													</div>
+													@error('items.0.product_id')
+													<p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+													@enderror
+												</div>
+
+												<!-- Quantity -->
+												<div>
+													<label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
+														<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+															<path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+														</svg>
+														Quantity <span class="text-red-500">*</span>
+													</label>
+													<input type="number" min="1" name="items[0][quantity]" class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all sales-item-qty @error('items.0.quantity') border-red-500 @enderror" placeholder="1" value="{{ old('items.0.quantity') }}" required oninput="updateSalesRowTotal(this)">
+													@error('items.0.quantity')
+													<p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+													@enderror
+													<p class="text-red-500 text-xs mt-1 hidden sales-item-qty-error"></p>
+												</div>
+
+												<!-- Unit Price -->
+												<div>
+													<label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
+														<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+															<path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+															<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+														</svg>
+														Unit Price
+													</label>
+													<input type="text" class="w-full border-2 border-gray-200 rounded-lg px-3 py-1.5 text-base font-bold bg-gray-100 text-gray-600 sales-item-unit-price" value="" placeholder="Auto-filled" disabled>
+													<input type="hidden" name="items[0][unit_price]" class="sales-item-unit-price-hidden" value="">
+												</div>
 											</div>
 
-											<!-- Unit Price -->
-											<div>
-												<label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
-													<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-														<path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-														<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
-													</svg>
-													Unit Price
-												</label>
-												<input id="newItemUnitPrice" type="text" class="w-full border-2 border-gray-200 rounded-lg px-3 py-1.5 text-base font-bold bg-gray-100 text-gray-600" value="" placeholder="Auto-filled" disabled>
-												<input id="newItemUnitPriceHidden" type="hidden" name="items[0][unit_price]" value="">
+											<!-- Line Total Display -->
+											<div class="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg">
+												<div class="flex items-center justify-between">
+													<span class="text-xs font-bold text-amber-800 flex items-center gap-1.5">
+														<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+															<path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+														</svg>
+														Line Total:
+													</span>
+													<span class="text-xl font-bold text-amber-700 sales-item-line-total">₱0.00</span>
+												</div>
 											</div>
 										</div>
+									</div>
 
-										<!-- Line Total Display -->
-										<div class="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg">
-											<div class="flex items-center justify-between">
-												<span class="text-xs font-bold text-amber-800 flex items-center gap-1.5">
-													<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-														<path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-													</svg>
-													Line Total:
-												</span>
-												<span id="newItemLineTotal" class="text-xl font-bold text-amber-700">₱0.00</span>
-											</div>
+									<!-- Grand Total Display -->
+									<div class="mt-2 p-4 bg-gradient-to-r from-slate-700 to-slate-800 border-2 border-slate-600 rounded-xl">
+										<div class="flex items-center justify-between">
+											<span class="text-sm font-bold text-white flex items-center gap-1.5">
+												<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+													<path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+												</svg>
+												Order Grand Total:
+											</span>
+											<span id="salesGrandTotal" class="text-2xl font-bold text-amber-400">₱0.00</span>
 										</div>
 									</div>
 								</div>
