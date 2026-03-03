@@ -53,6 +53,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/inventory/stock-movements/report', [InventoryController::class, 'stockMovementsReport'])
         ->name('inventory.stock-movements-report')
         ->middleware('role:admin,inventory_clerk,procurement_officer');
+    Route::get('/inventory/metrics', [InventoryController::class, 'metrics'])
+        ->name('inventory.metrics')
+        ->middleware('role:admin,inventory_clerk,procurement_officer,sales_clerk');
 
     // Procurement
     Route::get('/procurement', [ProcurementController::class, 'index'])
