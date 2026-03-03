@@ -729,103 +729,127 @@
 
                             <!-- Material Selection Section -->
                             <div class="pt-4 border-t-2 border-gray-300">
-                                <h4 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-1.5">
-                                    <span class="w-1 h-6 bg-amber-500 rounded"></span>
-                                    Order Items
-                                </h4>
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="text-xl font-bold text-gray-900 flex items-center gap-1.5">
+                                        <span class="w-1 h-6 bg-amber-500 rounded"></span>
+                                        Order Items
+                                    </h4>
+                                    <button type="button" onclick="addProcurementMaterialRow()" class="px-3 py-2 bg-green-600 text-white text-xs rounded-xl hover:bg-green-700 font-bold shadow-lg transition-all flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                         Add Material
+                                    </button>
+                                </div>
                                 
-                                <div class="bg-white rounded-xl border-2 border-slate-300 p-5 shadow-lg">
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                        <!-- Material Selection (Searchable) -->
-                                        <div>
-                                            <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
-                                                <svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
-                                                </svg>
-                                                Material <span class="text-red-500">*</span>
-                                            </label>
-                                            <!-- Hidden select kept for pricing JS compatibility -->
-                                            <select id="newItemMaterial" name="items[0][material_id]" class="hidden" required>
-                                                <option value="">-- Select Material --</option>
-                                                @foreach($materials ?? [] as $material)
-                                                    <option value="{{ $material->id }}" data-price="{{ number_format($material->unit_cost,2,'.','') }}">{{ $material->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <div class="relative" id="materialSearchWrapper">
-                                                <input type="text" id="materialSearchInput" autocomplete="off" placeholder="Search material..." class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.material_id') border-red-500 @enderror" oninput="filterMaterialList()" onfocus="document.getElementById('materialResultsList').classList.remove('hidden')">
-                                                <!-- Selected material badge -->
-                                                <div id="materialSelectedBadge" class="hidden mt-1.5 p-2 bg-amber-50 border-2 border-amber-400 rounded-lg flex items-center justify-between">
-                                                    <div class="flex items-center gap-2">
-                                                        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs" id="materialInitial">?</div>
-                                                        <div>
-                                                            <p class="font-bold text-gray-900 text-xs" id="materialSelectedName">—</p>
-                                                            <p class="text-[10px] text-gray-500" id="materialSelectedPrice">—</p>
-                                                        </div>
-                                                    </div>
-                                                    <button type="button" onclick="clearMaterialSelection()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-0.5 transition-all">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                                    </button>
-                                                </div>
-                                                <!-- Results dropdown -->
-                                                <div id="materialResultsList" class="hidden absolute z-[100001] w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-44 overflow-y-auto">
+                                <div id="procurementItemsContainer">
+                                    <!-- Item Row 0 -->
+                                    <div class="bg-white rounded-xl border-2 border-slate-300 p-5 shadow-lg mb-3 procurement-item-row" data-index="0">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <!-- Material Selection (Searchable) -->
+                                            <div>
+                                                <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
+                                                    <svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Material <span class="text-red-500">*</span>
+                                                </label>
+                                                <!-- Hidden select kept for pricing JS compatibility -->
+                                                <select id="newItemMaterial" name="items[0][material_id]" class="hidden proc-material-select" required>
+                                                    <option value="">-- Select Material --</option>
                                                     @foreach($materials ?? [] as $material)
-                                                    <button type="button" class="material-option w-full flex items-center gap-2.5 px-3 py-2 hover:bg-amber-50 transition-all text-left border-b border-gray-100 last:border-b-0" data-id="{{ $material->id }}" data-name="{{ $material->name }}" data-price="{{ number_format($material->unit_cost,2,'.','') }}" onclick="selectMaterial(this)">
-                                                        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
-                                                            {{ strtoupper(substr($material->name, 0, 1)) }}
-                                                        </div>
-                                                        <div class="flex-1 min-w-0">
-                                                            <p class="font-bold text-gray-900 text-xs truncate">{{ $material->name }}</p>
-                                                            <p class="text-[10px] text-gray-500">₱{{ number_format($material->unit_cost, 2) }}</p>
-                                                        </div>
-                                                    </button>
+                                                        <option value="{{ $material->id }}" data-price="{{ number_format($material->unit_cost,2,'.','') }}">{{ $material->name }}</option>
                                                     @endforeach
-                                                    <div id="materialNoMatch" class="hidden px-4 py-3 text-center text-gray-400 text-sm">No matching material found</div>
+                                                </select>
+                                                <div class="relative proc-material-search-wrapper" id="materialSearchWrapper">
+                                                    <input type="text" id="materialSearchInput" autocomplete="off" placeholder="Search material..." class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all proc-material-search @error('items.0.material_id') border-red-500 @enderror" oninput="filterProcMaterialList(this)" onfocus="this.closest('.proc-material-search-wrapper').querySelector('.proc-material-results').classList.remove('hidden')">
+                                                    <!-- Selected material badge -->
+                                                    <div class="hidden mt-1.5 p-2 bg-amber-50 border-2 border-amber-400 rounded-lg flex items-center justify-between proc-material-badge">
+                                                        <div class="flex items-center gap-2">
+                                                            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs proc-material-initial">?</div>
+                                                            <div>
+                                                                <p class="font-bold text-gray-900 text-xs proc-material-selected-name">—</p>
+                                                                <p class="text-[10px] text-gray-500 proc-material-selected-price">—</p>
+                                                            </div>
+                                                        </div>
+                                                        <button type="button" onclick="clearProcMaterialSelection(this)" class="text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-0.5 transition-all">
+                                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                        </button>
+                                                    </div>
+                                                    <!-- Results dropdown -->
+                                                    <div class="hidden absolute z-[100001] w-full mt-1 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-44 overflow-y-auto proc-material-results" id="materialResultsList">
+                                                        @foreach($materials ?? [] as $material)
+                                                        <button type="button" class="proc-material-option w-full flex items-center gap-2.5 px-3 py-2 hover:bg-amber-50 transition-all text-left border-b border-gray-100 last:border-b-0" data-id="{{ $material->id }}" data-name="{{ $material->name }}" data-price="{{ number_format($material->unit_cost,2,'.','') }}" onclick="selectProcMaterial(this)">
+                                                            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-[10px] flex-shrink-0">
+                                                                {{ strtoupper(substr($material->name, 0, 1)) }}
+                                                            </div>
+                                                            <div class="flex-1 min-w-0">
+                                                                <p class="font-bold text-gray-900 text-xs truncate">{{ $material->name }}</p>
+                                                                <p class="text-[10px] text-gray-500">₱{{ number_format($material->unit_cost, 2) }}</p>
+                                                            </div>
+                                                        </button>
+                                                        @endforeach
+                                                        <div class="proc-material-no-match hidden px-4 py-3 text-center text-gray-400 text-sm">No matching material found</div>
+                                                    </div>
                                                 </div>
+                                                @error('items.0.material_id')
+                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                @enderror
                                             </div>
-                                            @error('items.0.material_id')
-                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                            @enderror
+
+                                            <!-- Quantity -->
+                                            <div>
+                                                <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
+                                                    <svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                                    </svg>
+                                                    Quantity <span class="text-red-500">*</span>
+                                                </label>
+                                                <input type="number" min="1" step="1" name="items[0][quantity]" class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all proc-item-qty @error('items.0.quantity') border-red-500 @enderror" placeholder="1" value="{{ old('items.0.quantity') }}" required oninput="updateProcRowTotal(this)">
+                                                @error('items.0.quantity')
+                                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+
+                                            <!-- Unit Price -->
+                                            <div>
+                                                <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
+                                                    <svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Unit Price
+                                                </label>
+                                                <input type="text" class="w-full border-2 border-gray-200 rounded-lg px-3 py-1.5 text-base font-bold bg-gray-100 text-gray-600 proc-item-unit-price" value="" placeholder="Auto-filled" disabled>
+                                                <input type="hidden" name="items[0][unit_price]" class="proc-item-unit-price-hidden" value="">
+                                            </div>
                                         </div>
 
-                                        <!-- Quantity -->
-                                        <div>
-                                            <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
-                                                <svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                                </svg>
-                                                Quantity <span class="text-red-500">*</span>
-                                            </label>
-                                            <input id="newItemQty" type="number" min="1" step="1" name="items[0][quantity]" class="w-full border-2 border-gray-300 rounded-lg px-3 py-1.5 text-base font-bold focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all @error('items.0.quantity') border-red-500 @enderror" placeholder="1" value="{{ old('items.0.quantity') }}" required>
-                                            @error('items.0.quantity')
-                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                                            @enderror
-                                        </div>
-
-                                        <!-- Unit Price -->
-                                        <div>
-                                            <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
-                                                <svg class="w-3 h-3 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd" />
-                                                </svg>
-                                                Unit Price
-                                            </label>
-                                            <input id="newItemUnitPrice" type="text" class="w-full border-2 border-gray-200 rounded-lg px-3 py-1.5 text-base font-bold bg-gray-100 text-gray-600" value="" placeholder="Auto-filled" disabled>
-                                            <input id="newItemUnitPriceHidden" type="hidden" name="items[0][unit_price]" value="">
+                                        <!-- Line Total Display -->
+                                        <div class="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-xs font-bold text-amber-800 flex items-center gap-1.5">
+                                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                                    </svg>
+                                                    Line Total:
+                                                </span>
+                                                <span class="text-xl font-bold text-amber-700 proc-item-line-total">₱0.00</span>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <!-- Line Total Display -->
-                                    <div class="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-lg">
-                                        <div class="flex items-center justify-between">
-                                            <span class="text-xs font-bold text-amber-800 flex items-center gap-1.5">
-                                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                                                </svg>
-                                                Line Total:
-                                            </span>
-                                            <span id="newItemLineTotal" class="text-xl font-bold text-amber-700">₱0.00</span>
-                                        </div>
+                                <!-- Grand Total Display -->
+                                <div class="mt-2 p-4 bg-gradient-to-r from-slate-700 to-slate-800 border-2 border-slate-600 rounded-xl">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-bold text-white flex items-center gap-1.5">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                            </svg>
+                                            Order Grand Total:
+                                        </span>
+                                        <span id="procGrandTotal" class="text-2xl font-bold text-amber-400">₱0.00</span>
                                     </div>
                                 </div>
                             </div>
@@ -1365,67 +1389,247 @@
         function closeAddPurchaseOrderModal() {
             document.getElementById('addPurchaseOrderModal').classList.add('hidden');
             document.getElementById('addPurchaseOrderForm').reset();
-            // Reset pricing fields
-            const newItemUnitPrice = document.getElementById('newItemUnitPrice');
-            const newItemUnitPriceHidden = document.getElementById('newItemUnitPriceHidden');
-            const newItemLineTotal = document.getElementById('newItemLineTotal');
-            if (newItemUnitPrice) newItemUnitPrice.value = '';
-            if (newItemUnitPriceHidden) newItemUnitPriceHidden.value = '';
-            if (newItemLineTotal) newItemLineTotal.textContent = '₱0.00';
+            // Remove all extra rows
+            const container = document.getElementById('procurementItemsContainer');
+            const rows = container.querySelectorAll('.procurement-item-row');
+            rows.forEach((row, i) => {
+                if (i > 0) row.remove();
+            });
+            // Reset first row
+            const firstRow = container.querySelector('.procurement-item-row');
+            if (firstRow) {
+                const select = firstRow.querySelector('.proc-material-select');
+                if (select) { select.value = ''; }
+                const searchInput = firstRow.querySelector('.proc-material-search');
+                if (searchInput) { searchInput.value = ''; searchInput.classList.remove('hidden'); }
+                const badge = firstRow.querySelector('.proc-material-badge');
+                if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+                const unitPrice = firstRow.querySelector('.proc-item-unit-price');
+                if (unitPrice) unitPrice.value = '';
+                const unitPriceHidden = firstRow.querySelector('.proc-item-unit-price-hidden');
+                if (unitPriceHidden) unitPriceHidden.value = '';
+                const lineTotal = firstRow.querySelector('.proc-item-line-total');
+                if (lineTotal) lineTotal.textContent = '₱0.00';
+                firstRow.querySelectorAll('.proc-material-option').forEach(opt => opt.classList.remove('hidden'));
+            }
+            updateProcGrandTotal();
         }
 
-        // Real-time unit price + line total for New Purchase Order modal
-        (function() {
-            const newItemMaterial = document.getElementById('newItemMaterial');
-            const newItemQty = document.getElementById('newItemQty');
-            const newItemUnitPrice = document.getElementById('newItemUnitPrice');
-            const newItemUnitPriceHidden = document.getElementById('newItemUnitPriceHidden');
-            const newItemLineTotal = document.getElementById('newItemLineTotal');
+        // --- Procurement Multi-Row Material Functions ---
+        var procRowIndex = 0;
 
-            function toNumber(value) {
-                const n = parseFloat(value);
-                return Number.isFinite(n) ? n : 0;
-            }
+        function procFormatCurrency(num) {
+            return '₱' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
-            function formatCurrency(num) {
-                return '₱' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
+        function procToNumber(value) {
+            const n = parseFloat(value);
+            return Number.isFinite(n) ? n : 0;
+        }
 
-            function getSelectedUnitPrice() {
-                if (!newItemMaterial) return 0;
-                const opt = newItemMaterial.options[newItemMaterial.selectedIndex];
-                const priceAttr = opt ? opt.getAttribute('data-price') : null;
-                return toNumber(priceAttr);
-            }
+        function updateProcRowTotal(el) {
+            const row = el.closest('.procurement-item-row');
+            if (!row) return;
+            const select = row.querySelector('.proc-material-select');
+            const qtyInput = row.querySelector('.proc-item-qty');
+            const unitPriceDisplay = row.querySelector('.proc-item-unit-price');
+            const unitPriceHidden = row.querySelector('.proc-item-unit-price-hidden');
+            const lineTotalDisplay = row.querySelector('.proc-item-line-total');
 
-            function updatePricingFields() {
-                const unit = getSelectedUnitPrice();
-                const qty = toNumber(newItemQty?.value || '0');
-                if (newItemUnitPrice) newItemUnitPrice.value = unit ? formatCurrency(unit) : '';
-                if (newItemUnitPriceHidden) newItemUnitPriceHidden.value = unit ? unit.toFixed(2) : '';
-                const total = unit * (qty || 0);
-                if (newItemLineTotal) newItemLineTotal.textContent = formatCurrency(total);
+            let unit = 0;
+            if (select) {
+                const opt = select.options[select.selectedIndex];
+                unit = procToNumber(opt ? opt.getAttribute('data-price') : null);
             }
+            const qty = procToNumber(qtyInput?.value || '0');
+            if (unitPriceDisplay) unitPriceDisplay.value = unit ? procFormatCurrency(unit) : '';
+            if (unitPriceHidden) unitPriceHidden.value = unit ? unit.toFixed(2) : '';
+            const total = unit * (qty || 0);
+            if (lineTotalDisplay) lineTotalDisplay.textContent = procFormatCurrency(total);
+            updateProcGrandTotal();
+        }
 
-            if (newItemMaterial) {
-                newItemMaterial.addEventListener('change', () => {
-                    // If quantity empty or <1, default to 1 on first select
-                    if (newItemQty && (!newItemQty.value || toNumber(newItemQty.value) < 1)) {
-                        newItemQty.value = '1';
-                    }
-                    updatePricingFields();
-                });
-            }
-            if (newItemQty) {
-                ['input','change','blur'].forEach(evt => newItemQty.addEventListener(evt, () => {
-                    if (toNumber(newItemQty.value) < 1) newItemQty.value = '1';
-                    updatePricingFields();
-                }));
-            }
+        function updateProcGrandTotal() {
+            let grand = 0;
+            document.querySelectorAll('.procurement-item-row').forEach(row => {
+                const select = row.querySelector('.proc-material-select');
+                const qtyInput = row.querySelector('.proc-item-qty');
+                let unit = 0;
+                if (select) {
+                    const opt = select.options[select.selectedIndex];
+                    unit = procToNumber(opt ? opt.getAttribute('data-price') : null);
+                }
+                const qty = procToNumber(qtyInput?.value || '0');
+                grand += unit * (qty || 0);
+            });
+            const el = document.getElementById('procGrandTotal');
+            if (el) el.textContent = procFormatCurrency(grand);
+        }
 
-            // Initialize pricing display
-            updatePricingFields();
-        })();
+        function addProcurementMaterialRow() {
+            procRowIndex++;
+            const container = document.getElementById('procurementItemsContainer');
+            const firstRow = container.querySelector('.procurement-item-row');
+            const newRow = firstRow.cloneNode(true);
+            const idx = procRowIndex;
+            
+            newRow.setAttribute('data-index', idx);
+            
+            // Update name attributes
+            const select = newRow.querySelector('.proc-material-select');
+            if (select) {
+                select.name = `items[${idx}][material_id]`;
+                select.id = '';
+                select.value = '';
+            }
+            const qtyInput = newRow.querySelector('.proc-item-qty');
+            if (qtyInput) {
+                qtyInput.name = `items[${idx}][quantity]`;
+                qtyInput.value = '';
+            }
+            const unitPriceHidden = newRow.querySelector('.proc-item-unit-price-hidden');
+            if (unitPriceHidden) {
+                unitPriceHidden.name = `items[${idx}][unit_price]`;
+                unitPriceHidden.value = '';
+            }
+            const unitPriceDisplay = newRow.querySelector('.proc-item-unit-price');
+            if (unitPriceDisplay) unitPriceDisplay.value = '';
+            
+            // Reset search input
+            const searchInput = newRow.querySelector('.proc-material-search');
+            if (searchInput) { searchInput.value = ''; searchInput.classList.remove('hidden'); searchInput.id = ''; }
+            
+            // Reset badge
+            const badge = newRow.querySelector('.proc-material-badge');
+            if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+            
+            // Reset line total
+            const lineTotal = newRow.querySelector('.proc-item-line-total');
+            if (lineTotal) lineTotal.textContent = '₱0.00';
+            
+            // Reset results list
+            const resultsList = newRow.querySelector('.proc-material-results');
+            if (resultsList) { resultsList.classList.add('hidden'); resultsList.id = ''; }
+
+            // Show all material options
+            newRow.querySelectorAll('.proc-material-option').forEach(opt => opt.classList.remove('hidden'));
+            newRow.querySelector('.proc-material-no-match')?.classList.add('hidden');
+            
+            // Add remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-md';
+            removeBtn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+            removeBtn.onclick = function() {
+                newRow.style.transition = 'all 0.3s ease-out';
+                newRow.style.opacity = '0';
+                newRow.style.transform = 'scale(0.95)';
+                setTimeout(() => { newRow.remove(); updateProcGrandTotal(); }, 300);
+            };
+            newRow.style.position = 'relative';
+            newRow.appendChild(removeBtn);
+
+            // Add animation
+            newRow.style.opacity = '0';
+            newRow.style.transform = 'translateY(-10px)';
+            container.appendChild(newRow);
+            requestAnimationFrame(() => {
+                newRow.style.transition = 'all 0.3s ease-out';
+                newRow.style.opacity = '1';
+                newRow.style.transform = 'translateY(0)';
+            });
+        }
+
+        function filterProcMaterialList(input) {
+            const wrapper = input.closest('.proc-material-search-wrapper');
+            const term = input.value.toLowerCase().trim();
+            const options = wrapper.querySelectorAll('.proc-material-option');
+            const noMatch = wrapper.querySelector('.proc-material-no-match');
+            const resultsList = wrapper.querySelector('.proc-material-results');
+            let count = 0;
+
+            resultsList.classList.remove('hidden');
+            options.forEach(opt => {
+                const name = opt.getAttribute('data-name').toLowerCase();
+                if (name.includes(term)) { opt.classList.remove('hidden'); count++; }
+                else { opt.classList.add('hidden'); }
+            });
+            noMatch.classList.toggle('hidden', count > 0);
+        }
+
+        function selectProcMaterial(btn) {
+            const row = btn.closest('.procurement-item-row');
+            const id = btn.getAttribute('data-id');
+            const name = btn.getAttribute('data-name');
+            const price = btn.getAttribute('data-price');
+
+            const hiddenSelect = row.querySelector('.proc-material-select');
+            hiddenSelect.value = id;
+
+            const searchInput = row.querySelector('.proc-material-search');
+            searchInput.value = name;
+            searchInput.classList.add('hidden');
+
+            const resultsList = row.querySelector('.proc-material-results');
+            resultsList.classList.add('hidden');
+
+            const badge = row.querySelector('.proc-material-badge');
+            badge.classList.remove('hidden');
+            badge.classList.add('flex');
+            row.querySelector('.proc-material-selected-name').textContent = name;
+            row.querySelector('.proc-material-selected-price').textContent = '₱' + parseFloat(price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+            row.querySelector('.proc-material-initial').textContent = name.charAt(0).toUpperCase();
+
+            // Auto-fill pricing
+            const unitPriceDisplay = row.querySelector('.proc-item-unit-price');
+            const unitPriceHidden = row.querySelector('.proc-item-unit-price-hidden');
+            if (unitPriceDisplay) unitPriceDisplay.value = procFormatCurrency(parseFloat(price));
+            if (unitPriceHidden) unitPriceHidden.value = parseFloat(price).toFixed(2);
+
+            // Default qty to 1 if empty
+            const qtyInput = row.querySelector('.proc-item-qty');
+            if (qtyInput && (!qtyInput.value || procToNumber(qtyInput.value) < 1)) {
+                qtyInput.value = '1';
+            }
+            updateProcRowTotal(btn);
+        }
+
+        function clearProcMaterialSelection(btn) {
+            const row = btn.closest('.procurement-item-row');
+            const hiddenSelect = row.querySelector('.proc-material-select');
+            hiddenSelect.value = '';
+
+            const input = row.querySelector('.proc-material-search');
+            input.value = '';
+            input.classList.remove('hidden');
+
+            const badge = row.querySelector('.proc-material-badge');
+            badge.classList.add('hidden');
+            badge.classList.remove('flex');
+
+            row.querySelectorAll('.proc-material-option').forEach(opt => opt.classList.remove('hidden'));
+            row.querySelector('.proc-material-no-match')?.classList.add('hidden');
+
+            const unitPriceDisplay = row.querySelector('.proc-item-unit-price');
+            const unitPriceHidden = row.querySelector('.proc-item-unit-price-hidden');
+            if (unitPriceDisplay) unitPriceDisplay.value = '';
+            if (unitPriceHidden) unitPriceHidden.value = '';
+            const lineTotal = row.querySelector('.proc-item-line-total');
+            if (lineTotal) lineTotal.textContent = '₱0.00';
+            
+            input.focus();
+            updateProcGrandTotal();
+        }
+
+        // Close material dropdown on outside click
+        document.addEventListener('click', function(e) {
+            document.querySelectorAll('.proc-material-search-wrapper').forEach(wrapper => {
+                const results = wrapper.querySelector('.proc-material-results');
+                if (results && !wrapper.contains(e.target)) {
+                    results.classList.add('hidden');
+                }
+            });
+        });
 
         function openViewOrderModal(orderId) {
             document.getElementById('viewOrderItemsModal').classList.remove('hidden');
@@ -2513,79 +2717,6 @@
         input.focus();
     }
 
-    // Material searchable typeahead
-    function filterMaterialList() {
-        const input = document.getElementById('materialSearchInput');
-        const term = input.value.toLowerCase().trim();
-        const options = document.querySelectorAll('.material-option');
-        const noMatch = document.getElementById('materialNoMatch');
-        const resultsList = document.getElementById('materialResultsList');
-        let count = 0;
-
-        resultsList.classList.remove('hidden');
-        options.forEach(opt => {
-            const name = opt.getAttribute('data-name').toLowerCase();
-            if (name.includes(term)) {
-                opt.classList.remove('hidden');
-                count++;
-            } else {
-                opt.classList.add('hidden');
-            }
-        });
-        noMatch.classList.toggle('hidden', count > 0);
-    }
-
-    function selectMaterial(btn) {
-        const id = btn.getAttribute('data-id');
-        const name = btn.getAttribute('data-name');
-        const price = btn.getAttribute('data-price');
-
-        // Sync the hidden select so pricing JS still works
-        const hiddenSelect = document.getElementById('newItemMaterial');
-        hiddenSelect.value = id;
-        hiddenSelect.dispatchEvent(new Event('change')); // triggers pricing auto-fill
-
-        document.getElementById('materialSearchInput').value = name;
-        document.getElementById('materialSearchInput').classList.add('hidden');
-        document.getElementById('materialResultsList').classList.add('hidden');
-
-        // Show selected badge
-        const badge = document.getElementById('materialSelectedBadge');
-        badge.classList.remove('hidden');
-        badge.classList.add('flex');
-        document.getElementById('materialSelectedName').textContent = name;
-        document.getElementById('materialSelectedPrice').textContent = '₱' + parseFloat(price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-        document.getElementById('materialInitial').textContent = name.charAt(0).toUpperCase();
-    }
-
-    function clearMaterialSelection() {
-        // Reset hidden select
-        const hiddenSelect = document.getElementById('newItemMaterial');
-        hiddenSelect.value = '';
-        hiddenSelect.dispatchEvent(new Event('change'));
-
-        const input = document.getElementById('materialSearchInput');
-        input.value = '';
-        input.classList.remove('hidden');
-
-        const badge = document.getElementById('materialSelectedBadge');
-        badge.classList.add('hidden');
-        badge.classList.remove('flex');
-
-        // Reset all options
-        document.querySelectorAll('.material-option').forEach(opt => opt.classList.remove('hidden'));
-        document.getElementById('materialNoMatch').classList.add('hidden');
-        input.focus();
-    }
-
-    // Close material dropdown on outside click
-    document.addEventListener('click', function(e) {
-        const wrapper = document.getElementById('materialSearchWrapper');
-        const results = document.getElementById('materialResultsList');
-        if (wrapper && results && !wrapper.contains(e.target)) {
-            results.classList.add('hidden');
-        }
-    });
     </script>
 </div>
 @endsection
