@@ -619,7 +619,7 @@ $paymentBg = [
 											<svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
 												<path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
 											</svg>
-											+ Add Product
+										 + Add Product
 										</button>
 									</div>
 
@@ -1024,7 +1024,7 @@ $paymentBg = [
 </div>
 
 <!-- Confirmation Modal for Sales Order - Add -->
-<div id="confirmSalesOrderModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001] flex" onclick="if(event.target === this) closeConfirmSalesOrder()">
+<div id="confirmSalesOrderModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-[100001]" style="display:none;" onclick="if(event.target === this) closeConfirmSalesOrder()">
 	<div class="flex items-center justify-center min-h-screen p-3 w-full">
 		<div class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700">
 			<div class="sticky top-0 bg-gradient-to-r from-green-600 to-green-700 p-3 text-white rounded-t-xl z-10">
@@ -1049,7 +1049,7 @@ $paymentBg = [
 </div>
 
 <!-- Confirmation Modal for Cancelling Sales Order -->
-<div id="confirmCancelSalesOrderModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001] flex" onclick="if(event.target === this) closeCancelSalesOrderModal()">
+<div id="confirmCancelSalesOrderModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-[100001]" style="display:none;" onclick="if(event.target === this) closeCancelSalesOrderModal()">
 	<div class="flex items-center justify-center min-h-screen p-3 w-full">
 		<div class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700">
 			<div class="sticky top-0 bg-gradient-to-r from-red-600 to-red-700 p-3 text-white rounded-t-xl z-10">
@@ -1074,7 +1074,7 @@ $paymentBg = [
 </div>
 
 <!-- Confirmation Modal for Customer -->
-<div id="confirmCustomerModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001] flex" onclick="if(event.target === this) closeConfirmCustomer()">
+<div id="confirmCustomerModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-[100001]" style="display:none;" onclick="if(event.target === this) closeConfirmCustomer()">
 	<div class="flex items-center justify-center min-h-screen p-3 w-full">
 		<div class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700">
 			<div class="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 p-3 text-white rounded-t-xl z-10">
@@ -1099,7 +1099,7 @@ $paymentBg = [
 </div>
 
 <!-- Delete Customer Confirmation Modal -->
-<div id="deleteCustomerModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm hidden z-[100001] flex" onclick="if(event.target === this) closeDeleteCustomerModal()">
+<div id="deleteCustomerModal" class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-[100001]" style="display:none;" onclick="if(event.target === this) closeDeleteCustomerModal()">
 	<div class="flex items-center justify-center min-h-screen p-3 w-full">
 		<div class="bg-amber-50 rounded-xl max-w-lg w-full overflow-y-auto shadow-2xl border-2 border-slate-700">
 			<div class="sticky top-0 bg-gradient-to-r from-red-600 to-red-700 p-3 text-white rounded-t-xl z-10">
@@ -1129,6 +1129,34 @@ $paymentBg = [
 
 	function closeModal(modalId) {
 		document.getElementById(modalId).classList.add('hidden');
+		if (modalId === 'newOrderModal') { resetSalesOrderItems(); }
+	}
+
+	function resetSalesOrderItems() {
+		const container = document.getElementById('salesItemsContainer');
+		if (!container) return;
+		const rows = container.querySelectorAll('.sales-item-row');
+		rows.forEach((row, i) => { if (i > 0) row.remove(); });
+		const firstRow = container.querySelector('.sales-item-row');
+		if (firstRow) {
+			const select = firstRow.querySelector('.sales-product-select');
+			if (select) select.value = '';
+			const searchInput = firstRow.querySelector('.sales-product-search');
+			if (searchInput) { searchInput.value = ''; searchInput.classList.remove('hidden'); }
+			const badge = firstRow.querySelector('.sales-product-badge');
+			if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+			const unitPrice = firstRow.querySelector('.sales-item-unit-price');
+			if (unitPrice) unitPrice.value = '';
+			const unitPriceHidden = firstRow.querySelector('.sales-item-unit-price-hidden');
+			if (unitPriceHidden) unitPriceHidden.value = '';
+			const lineTotal = firstRow.querySelector('.sales-item-line-total');
+			if (lineTotal) lineTotal.textContent = '₱0.00';
+			firstRow.querySelectorAll('.sales-product-option').forEach(opt => opt.classList.remove('hidden'));
+			const qtyInput = firstRow.querySelector('.sales-item-qty');
+			if (qtyInput) qtyInput.value = '';
+		}
+		const grandTotal = document.getElementById('salesGrandTotal');
+		if (grandTotal) grandTotal.textContent = '₱0.00';
 	}
 
 	function openEditCustomerModal(customerId, name, type, phone, email) {
@@ -1207,12 +1235,6 @@ $paymentBg = [
 		const customersTbody = document.getElementById('customersTbody');
 		const salesNoMatch = document.getElementById('salesNoMatch');
 		const customersNoMatch = document.getElementById('customersNoMatch');
-		// New order real-time pricing refs
-		const newItemProduct = document.getElementById('newItemProduct');
-		const newItemQty = document.getElementById('newItemQty');
-		const newItemUnitPrice = document.getElementById('newItemUnitPrice');
-		const newItemUnitPriceHidden = document.getElementById('newItemUnitPriceHidden');
-		const newItemLineTotal = document.getElementById('newItemLineTotal');
 
 		function setMode(mode) {
 			salesTable.classList.add('hidden');
@@ -1300,83 +1322,6 @@ $paymentBg = [
 		if (statusFilter) statusFilter.addEventListener('change', applyFilters);
 		paymentFilter.addEventListener('change', applyFilters);
 
-		// ---- Real-time unit price + line total for New Order modal ----
-		function toNumber(value) {
-			const n = parseFloat(value);
-			return Number.isFinite(n) ? n : 0;
-		}
-
-		function formatCurrency(num) {
-			return '₱' + num.toLocaleString(undefined, {
-				minimumFractionDigits: 2,
-				maximumFractionDigits: 2
-			});
-		}
-
-		function getSelectedUnitPrice() {
-			if (!newItemProduct) return 0;
-			const opt = newItemProduct.options[newItemProduct.selectedIndex];
-			const priceAttr = opt ? opt.getAttribute('data-price') : null;
-			return toNumber(priceAttr);
-		}
-
-		async function fetchLatestPrice(productId) {
-			if (!productId) return 0;
-			try {
-				const response = await fetch(`/inventory/${productId}/details?type=product`);
-				const data = await response.json();
-				if (data && data.item && data.item.selling_price) {
-					return toNumber(data.item.selling_price);
-				}
-			} catch (error) {
-				console.error('Error fetching latest price:', error);
-			}
-			return getSelectedUnitPrice(); // Fallback to data-price if AJAX fails
-		}
-
-		async function updatePricingFields() {
-			const unit = getSelectedUnitPrice();
-			const qty = toNumber(newItemQty?.value || '0');
-			
-			if (newItemUnitPrice) newItemUnitPrice.value = unit ? formatCurrency(unit) : 'Fetching...';
-			if (newItemUnitPriceHidden) newItemUnitPriceHidden.value = unit ? unit.toFixed(2) : '';
-			
-			const total = unit * (qty || 0);
-			if (newItemLineTotal) newItemLineTotal.textContent = 'Line total: ' + formatCurrency(total);
-		}
-
-		if (newItemProduct) {
-			newItemProduct.addEventListener('change', async () => {
-				const productId = newItemProduct.value;
-				if (!productId) return;
-
-				// Show fetching state
-				if (newItemUnitPrice) newItemUnitPrice.value = 'Fetching...';
-
-				const latestPrice = await fetchLatestPrice(productId);
-				
-				// Update the data-price attribute so subsequent calls to getSelectedUnitPrice use the fresh value
-				const opt = newItemProduct.options[newItemProduct.selectedIndex];
-				if (opt) {
-					opt.setAttribute('data-price', latestPrice.toFixed(2));
-				}
-
-				// If quantity empty or <1, default to 1 on first select
-				if (newItemQty && (!newItemQty.value || toNumber(newItemQty.value) < 1)) {
-					newItemQty.value = '1';
-				}
-				updatePricingFields();
-			});
-		}
-		if (newItemQty) {
-			['input', 'change', 'blur'].forEach(evt => newItemQty.addEventListener(evt, () => {
-				if (newItemQty.value && toNumber(newItemQty.value) < 1) newItemQty.value = '1';
-				updatePricingFields();
-			}));
-		}
-
-		// Initialize pricing display if fields already have values
-		updatePricingFields();
 
 		// ---- Contact method validation for customer forms ----
 		function validateContactMethod(phoneInput, emailInput, errorMessageEl) {
@@ -1444,6 +1389,229 @@ $paymentBg = [
 		// default: sales tab
 		setMode('sales');
 	})();
+
+// ---- Sales Multi-Row Product Functions ----
+var salesRowIndex = 0;
+
+function salesToNumber(value) {
+	const n = parseFloat(value);
+	return Number.isFinite(n) ? n : 0;
+}
+
+function salesFormatCurrency(num) {
+	return '₱' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+async function salesFetchLatestPrice(productId) {
+	if (!productId) return 0;
+	try {
+		const response = await fetch(`/inventory/${productId}/details?type=product`);
+		const data = await response.json();
+		if (data && data.item && data.item.selling_price) {
+			return salesToNumber(data.item.selling_price);
+		}
+	} catch (error) {
+		console.error('Error fetching latest price:', error);
+	}
+	return 0;
+}
+
+function updateSalesRowTotal(el) {
+	const row = el.closest('.sales-item-row');
+	if (!row) return;
+	const select = row.querySelector('.sales-product-select');
+	const qtyInput = row.querySelector('.sales-item-qty');
+	const unitPriceDisplay = row.querySelector('.sales-item-unit-price');
+	const unitPriceHidden = row.querySelector('.sales-item-unit-price-hidden');
+	const lineTotalDisplay = row.querySelector('.sales-item-line-total');
+
+	let unit = 0;
+	if (select) {
+		const opt = select.options[select.selectedIndex];
+		unit = salesToNumber(opt ? opt.getAttribute('data-price') : null);
+	}
+	const qty = salesToNumber(qtyInput?.value || '0');
+	if (unitPriceDisplay) unitPriceDisplay.value = unit ? salesFormatCurrency(unit) : '';
+	if (unitPriceHidden) unitPriceHidden.value = unit ? unit.toFixed(2) : '';
+	const total = unit * (qty || 0);
+	if (lineTotalDisplay) lineTotalDisplay.textContent = salesFormatCurrency(total);
+	updateSalesGrandTotal();
+}
+
+function updateSalesGrandTotal() {
+	let grand = 0;
+	document.querySelectorAll('.sales-item-row').forEach(row => {
+		const select = row.querySelector('.sales-product-select');
+		const qtyInput = row.querySelector('.sales-item-qty');
+		let unit = 0;
+		if (select) {
+			const opt = select.options[select.selectedIndex];
+			unit = salesToNumber(opt ? opt.getAttribute('data-price') : null);
+		}
+		const qty = salesToNumber(qtyInput?.value || '0');
+		grand += unit * (qty || 0);
+	});
+	const el = document.getElementById('salesGrandTotal');
+	if (el) el.textContent = salesFormatCurrency(grand);
+}
+
+function addSalesProductRow() {
+	salesRowIndex++;
+	const container = document.getElementById('salesItemsContainer');
+	const firstRow = container.querySelector('.sales-item-row');
+	const newRow = firstRow.cloneNode(true);
+	const idx = salesRowIndex;
+
+	newRow.setAttribute('data-index', idx);
+
+	const select = newRow.querySelector('.sales-product-select');
+	if (select) { select.name = `items[${idx}][product_id]`; select.value = ''; }
+	const qtyInput = newRow.querySelector('.sales-item-qty');
+	if (qtyInput) { qtyInput.name = `items[${idx}][quantity]`; qtyInput.value = ''; }
+	const unitPriceHidden = newRow.querySelector('.sales-item-unit-price-hidden');
+	if (unitPriceHidden) { unitPriceHidden.name = `items[${idx}][unit_price]`; unitPriceHidden.value = ''; }
+	const unitPriceDisplay = newRow.querySelector('.sales-item-unit-price');
+	if (unitPriceDisplay) unitPriceDisplay.value = '';
+
+	const searchInput = newRow.querySelector('.sales-product-search');
+	if (searchInput) { searchInput.value = ''; searchInput.classList.remove('hidden'); }
+
+	const badge = newRow.querySelector('.sales-product-badge');
+	if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+
+	const lineTotal = newRow.querySelector('.sales-item-line-total');
+	if (lineTotal) lineTotal.textContent = '₱0.00';
+
+	const resultsList = newRow.querySelector('.sales-product-results');
+	if (resultsList) resultsList.classList.add('hidden');
+
+	newRow.querySelectorAll('.sales-product-option').forEach(opt => opt.classList.remove('hidden'));
+	newRow.querySelector('.sales-product-no-match')?.classList.add('hidden');
+
+	const qtyError = newRow.querySelector('.sales-item-qty-error');
+	if (qtyError) { qtyError.textContent = ''; qtyError.classList.add('hidden'); }
+
+	const removeBtn = document.createElement('button');
+	removeBtn.type = 'button';
+	removeBtn.className = 'absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-md';
+	removeBtn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+	removeBtn.onclick = function() {
+		newRow.style.transition = 'all 0.3s ease-out';
+		newRow.style.opacity = '0';
+		newRow.style.transform = 'scale(0.95)';
+		setTimeout(() => { newRow.remove(); updateSalesGrandTotal(); }, 300);
+	};
+	newRow.style.position = 'relative';
+	newRow.appendChild(removeBtn);
+
+	newRow.style.opacity = '0';
+	newRow.style.transform = 'translateY(-10px)';
+	container.appendChild(newRow);
+	requestAnimationFrame(() => {
+		newRow.style.transition = 'all 0.3s ease-out';
+		newRow.style.opacity = '1';
+		newRow.style.transform = 'translateY(0)';
+	});
+}
+
+function filterSalesProductList(input) {
+	const wrapper = input.closest('.sales-product-search-wrapper');
+	const term = input.value.toLowerCase().trim();
+	const options = wrapper.querySelectorAll('.sales-product-option');
+	const noMatch = wrapper.querySelector('.sales-product-no-match');
+	const resultsList = wrapper.querySelector('.sales-product-results');
+	let count = 0;
+
+	resultsList.classList.remove('hidden');
+	options.forEach(opt => {
+		const name = opt.getAttribute('data-name').toLowerCase();
+		if (name.includes(term)) { opt.classList.remove('hidden'); count++; }
+		else { opt.classList.add('hidden'); }
+	});
+	noMatch.classList.toggle('hidden', count > 0);
+}
+
+async function selectSalesProduct(btn) {
+	const row = btn.closest('.sales-item-row');
+	const id = btn.getAttribute('data-id');
+	const name = btn.getAttribute('data-name');
+	let price = parseFloat(btn.getAttribute('data-price'));
+
+	const hiddenSelect = row.querySelector('.sales-product-select');
+	hiddenSelect.value = id;
+
+	const searchInput = row.querySelector('.sales-product-search');
+	searchInput.value = name;
+	searchInput.classList.add('hidden');
+
+	const resultsList = row.querySelector('.sales-product-results');
+	resultsList.classList.add('hidden');
+
+	const badge = row.querySelector('.sales-product-badge');
+	badge.classList.remove('hidden');
+	badge.classList.add('flex');
+	row.querySelector('.sales-product-selected-name').textContent = name;
+	row.querySelector('.sales-product-initial').textContent = name.charAt(0).toUpperCase();
+
+	// Fetch latest price
+	const unitPriceDisplay = row.querySelector('.sales-item-unit-price');
+	if (unitPriceDisplay) unitPriceDisplay.value = 'Fetching...';
+
+	const latestPrice = await salesFetchLatestPrice(id);
+	if (latestPrice > 0) price = latestPrice;
+
+	const opt = hiddenSelect.querySelector(`option[value="${id}"]`);
+	if (opt) opt.setAttribute('data-price', price.toFixed(2));
+
+	row.querySelector('.sales-product-selected-price').textContent = salesFormatCurrency(price);
+	if (unitPriceDisplay) unitPriceDisplay.value = salesFormatCurrency(price);
+	const unitPriceHidden = row.querySelector('.sales-item-unit-price-hidden');
+	if (unitPriceHidden) unitPriceHidden.value = price.toFixed(2);
+
+	const qtyInput = row.querySelector('.sales-item-qty');
+	if (qtyInput && (!qtyInput.value || salesToNumber(qtyInput.value) < 1)) {
+		qtyInput.value = '1';
+	}
+	updateSalesRowTotal(btn);
+}
+
+function clearSalesProductSelection(btn) {
+	const row = btn.closest('.sales-item-row');
+	const hiddenSelect = row.querySelector('.sales-product-select');
+	hiddenSelect.value = '';
+
+	const input = row.querySelector('.sales-product-search');
+	input.value = '';
+	input.classList.remove('hidden');
+
+	const badge = row.querySelector('.sales-product-badge');
+	badge.classList.add('hidden');
+	badge.classList.remove('flex');
+
+	row.querySelectorAll('.sales-product-option').forEach(opt => opt.classList.remove('hidden'));
+	row.querySelector('.sales-product-no-match')?.classList.add('hidden');
+
+	const unitPriceDisplay = row.querySelector('.sales-item-unit-price');
+	const unitPriceHidden = row.querySelector('.sales-item-unit-price-hidden');
+	if (unitPriceDisplay) unitPriceDisplay.value = '';
+	if (unitPriceHidden) unitPriceHidden.value = '';
+	const lineTotal = row.querySelector('.sales-item-line-total');
+	if (lineTotal) lineTotal.textContent = '₱0.00';
+
+	input.focus();
+	updateSalesGrandTotal();
+}
+
+// Close product dropdown on outside click
+document.addEventListener('click', function(e) {
+	document.querySelectorAll('.sales-product-search-wrapper').forEach(wrapper => {
+		const results = wrapper.querySelector('.sales-product-results');
+		if (results && !wrapper.contains(e.target)) {
+			results.classList.add('hidden');
+		}
+	});
+});
+
 
 	// Auto-open modal if validation errors exist for new customer
 	@if ($errors->any() && (old('name') || old('customer_type') || old('phone') || old('email')))
@@ -1604,14 +1772,12 @@ $paymentBg = [
 	// Confirmation Modal Functions for Sales Order
 	function confirmSalesOrder(event) {
 		event.preventDefault();
-		document.getElementById('confirmSalesOrderModal').classList.remove('hidden');
-		document.getElementById('confirmSalesOrderModal').classList.add('flex');
+		document.getElementById('confirmSalesOrderModal').style.display = 'flex';
 		return false;
 	}
 
 	function closeConfirmSalesOrder() {
-		document.getElementById('confirmSalesOrderModal').classList.add('hidden');
-		document.getElementById('confirmSalesOrderModal').classList.remove('flex');
+		document.getElementById('confirmSalesOrderModal').style.display = 'none';
 	}
 
 	function submitSalesOrder() {
@@ -1620,7 +1786,7 @@ $paymentBg = [
 		showSuccessNotification('Sales order created successfully!');
 		// Submit the form normally (let Laravel handle it)
 		const form = document.getElementById('newOrderForm');
-		form.onsubmit = null; // Remove the onsubmit handler
+		form.onsubmit = null; 
 		setTimeout(() => {
 			form.submit();
 		}, 2000);
@@ -1633,14 +1799,12 @@ $paymentBg = [
 		currentCancelOrderId = id;
 		document.getElementById('cancelSalesOrderNumber').textContent = orderNumber;
 		const modal = document.getElementById('confirmCancelSalesOrderModal');
-		modal.classList.remove('hidden');
-		modal.classList.add('flex');
+		modal.style.display = 'flex';
 	}
 
 	function closeCancelSalesOrderModal() {
 		const modal = document.getElementById('confirmCancelSalesOrderModal');
-		modal.classList.add('hidden');
-		modal.classList.remove('flex');
+		modal.style.display = 'none';
 	}
 
 	function submitCancelSalesOrder() {
@@ -1674,14 +1838,12 @@ $paymentBg = [
 	// Confirmation Modal Functions for Customer
 	function confirmCustomer(event) {
 		event.preventDefault();
-		document.getElementById('confirmCustomerModal').classList.remove('hidden');
-		document.getElementById('confirmCustomerModal').classList.add('flex');
+		document.getElementById('confirmCustomerModal').style.display = 'flex';
 		return false;
 	}
 
 	function closeConfirmCustomer() {
-		document.getElementById('confirmCustomerModal').classList.add('hidden');
-		document.getElementById('confirmCustomerModal').classList.remove('flex');
+		document.getElementById('confirmCustomerModal').style.display = 'none';
 	}
 
 	function submitCustomer() {
@@ -1701,14 +1863,12 @@ $paymentBg = [
 		currentDeleteCustomerId = id;
 		document.getElementById('deleteCustomerName').textContent = customerName;
 		const modal = document.getElementById('deleteCustomerModal');
-		modal.classList.remove('hidden');
-		modal.classList.add('flex');
+		modal.style.display = 'flex';
 	}
 
 	function closeDeleteCustomerModal() {
 		const modal = document.getElementById('deleteCustomerModal');
-		modal.classList.add('hidden');
-		modal.classList.remove('flex');
+		modal.style.display = 'none';
 	}
 
 	function submitDeleteCustomer() {
@@ -2089,82 +2249,9 @@ function clearCustomerSelection() {
 	input.focus();
 }
 
-// Product searchable typeahead
-function filterProductList() {
-	const input = document.getElementById('productSearchInput');
-	const term = input.value.toLowerCase().trim();
-	const options = document.querySelectorAll('.product-option');
-	const noMatch = document.getElementById('productNoMatch');
-	const resultsList = document.getElementById('productResultsList');
-	let count = 0;
-
-	resultsList.classList.remove('hidden');
-	options.forEach(opt => {
-		const name = opt.getAttribute('data-name').toLowerCase();
-		if (name.includes(term)) {
-			opt.classList.remove('hidden');
-			count++;
-		} else {
-			opt.classList.add('hidden');
-		}
-	});
-	noMatch.classList.toggle('hidden', count > 0);
-}
-
-function selectProduct(btn) {
-	const id = btn.getAttribute('data-id');
-	const name = btn.getAttribute('data-name');
-	const price = btn.getAttribute('data-price');
-
-	// Sync the hidden select so pricing JS still works
-	const hiddenSelect = document.getElementById('newItemProduct');
-	hiddenSelect.value = id;
-	hiddenSelect.dispatchEvent(new Event('change')); // triggers pricing auto-fill
-
-	document.getElementById('productSearchInput').value = name;
-	document.getElementById('productSearchInput').classList.add('hidden');
-	document.getElementById('productResultsList').classList.add('hidden');
-
-	// Show selected badge
-	const badge = document.getElementById('productSelectedBadge');
-	badge.classList.remove('hidden');
-	badge.classList.add('flex');
-	document.getElementById('productSelectedName').textContent = name;
-	document.getElementById('productSelectedPrice').textContent = '₱' + parseFloat(price).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
-	document.getElementById('productInitial').textContent = name.charAt(0).toUpperCase();
-}
-
-function clearProductSelection() {
-	// Reset hidden select
-	const hiddenSelect = document.getElementById('newItemProduct');
-	hiddenSelect.value = '';
-	hiddenSelect.dispatchEvent(new Event('change'));
-
-	const input = document.getElementById('productSearchInput');
-	input.value = '';
-	input.classList.remove('hidden');
-
-	const badge = document.getElementById('productSelectedBadge');
-	badge.classList.add('hidden');
-	badge.classList.remove('flex');
-
-	// Reset all options
-	document.querySelectorAll('.product-option').forEach(opt => opt.classList.remove('hidden'));
-	document.getElementById('productNoMatch').classList.add('hidden');
-	input.focus();
-}
-
-// Close product dropdown on outside click
-document.addEventListener('click', function(e) {
-	const wrapper = document.getElementById('productSearchWrapper');
-	const results = document.getElementById('productResultsList');
-	if (wrapper && results && !wrapper.contains(e.target)) {
-		results.classList.add('hidden');
-	}
-});
 </script>
 
-<script src="{{ asset('js/sales-ajax.js') }}"></script>
+<script src="{{ asset('js/sales-ajax.js') }}?v={{ filemtime(public_path('js/sales-ajax.js')) }}"></script>
 
 
     @foreach($salesOrders as $order)
