@@ -109,6 +109,39 @@ class InventoryController extends Controller
         // Clear cache
         \App\Services\CacheService::clearRelated($request->type);
         
+        if ($request->expectsJson()) {
+            $responseItem = null;
+            if ($request->type === 'material') {
+                $item->load('supplier');
+                $responseItem = [
+                    'id'            => $item->id,
+                    'name'          => $item->name,
+                    'supplier_name' => $item->supplier->name ?? 'N/A',
+                    'unit'          => $item->unit,
+                    'category'      => $item->category,
+                    'unit_cost'     => (float) $item->unit_cost,
+                    'current_stock' => (float) $item->current_stock,
+                    'minimum_stock' => (float) $item->minimum_stock,
+                    'is_low_stock'  => $item->current_stock <= $item->minimum_stock,
+                ];
+            } else {
+                $responseItem = [
+                    'id'              => $item->id,
+                    'product_name'    => $item->product_name,
+                    'category'        => $item->category,
+                    'unit'            => $item->unit,
+                    'selling_price'   => (float) $item->selling_price,
+                    'production_cost' => (float) $item->production_cost,
+                ];
+            }
+            return response()->json([
+                'success' => true,
+                'message' => $itemType . ' added successfully!',
+                'item'    => $responseItem,
+                'metrics' => $this->getMetrics(),
+            ]);
+        }
+
         return redirect()->route('inventory')->with('success', $itemType . ' added successfully!');
     }
 
@@ -199,7 +232,27 @@ class InventoryController extends Controller
         
         // Clear cache
         \App\Services\CacheService::clearRelated($request->type);
-        
+
+        if ($request->expectsJson()) {
+            $responseItem = null;
+            if ($request->type === 'product') {
+                $item->refresh();
+                $responseItem = [
+                    'id'              => $item->id,
+                    'product_name'    => $item->product_name,
+                    'category'        => $item->category,
+                    'unit'            => $item->unit,
+                    'selling_price'   => (float) $item->selling_price,
+                    'production_cost' => (float) $item->production_cost,
+                ];
+            }
+            return response()->json([
+                'success' => true,
+                'message' => $itemType . ' updated successfully!',
+                'item'    => $responseItem,
+            ]);
+        }
+
         return redirect()->route('inventory')->with('success', $itemType . ' updated successfully!');
     }
 
@@ -230,6 +283,15 @@ class InventoryController extends Controller
         \App\Models\SystemActivity::log('Inventory', ucfirst($type) . ' Deleted', "{$type} '{$itemData}' removed from system.", 'red');
 
         $itemType = $type === 'product' ? 'Product' : 'Material';
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $itemType . ' deleted successfully!',
+                'metrics' => $this->getMetrics(),
+            ]);
+        }
+
         return redirect()->route('inventory')->with('success', $itemType . ' deleted successfully!');
     }
 
@@ -323,7 +385,40 @@ class InventoryController extends Controller
         $itemName = $request->type === 'material' ? $item->name : $item->product_name;
         \App\Models\SystemActivity::log('Inventory', 'Stock Adjusted', "Manual stock adjustment for '{$itemName}': {$request->quantity} units.", 'orange');
 
+        if ($request->expectsJson()) {
+            $item->refresh();
+            return response()->json([
+                'success'       => true,
+                'message'       => 'Stock adjusted successfully!',
+                'current_stock' => (float) $item->current_stock,
+                'metrics'       => $this->getMetrics(),
+            ]);
+        }
+
         return redirect()->route('inventory')->with('success', 'Stock adjusted successfully!');
+    }
+
+    /**
+     * Return live inventory metrics as JSON.
+     */
+    public function metrics()
+    {
+        return response()->json($this->getMetrics());
+    }
+
+    /**
+     * Compute metrics array (shared between several endpoints).
+     */
+    private function getMetrics(): array
+    {
+        $materials         = Material::all();
+        $totalMaterials    = $materials->count();
+        $lowStockAlerts    = $materials->filter(fn($m) => $m->current_stock <= $m->minimum_stock)->count();
+        $totalValue        = $materials->sum(fn($m) => $m->current_stock * $m->unit_cost);
+        $newOrders         = \App\Models\SalesOrder::where('status', 'Pending')->count();
+        $pendingDeliveries = \App\Models\PurchaseOrder::whereIn('status', ['Pending', 'Partial'])->count();
+
+        return compact('totalMaterials', 'lowStockAlerts', 'totalValue', 'newOrders', 'pendingDeliveries');
     }
 
     /**
