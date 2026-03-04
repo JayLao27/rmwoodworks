@@ -26,7 +26,7 @@
     data-product-name="{{ $workOrder->product_name }}" 
     data-customer-name="{{ strtolower($workOrder->salesOrder?->customer?->name ?? '') }}"
     data-assigned-to="{{ $workOrder->assigned_to }}" 
-    data-status="{{ $workOrder->status }}">
+    data-status="{{ $isOverdue ? 'overdue' : $workOrder->status }}">
     <div class="flex justify-between items-start">
         <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
