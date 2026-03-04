@@ -8,6 +8,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProcurementController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\AuditTrailController;
+use App\Http\Controllers\StaffController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -169,6 +170,26 @@ Route::middleware('auth')->group(function () {
     // System Audit Trails
     Route::get('/audit-trails', [AuditTrailController::class, 'index'])
         ->name('audit-trails')
+        ->middleware('role:admin');
+
+    // Staff Management 
+    Route::get('/staff-management', [StaffController::class, 'index'])
+        ->name('staff.index')
+        ->middleware('role:admin');
+    Route::post('/staff-management', [StaffController::class, 'store'])
+        ->name('staff.store')
+        ->middleware('role:admin');
+    Route::put('/staff-management/{id}', [StaffController::class, 'update'])
+        ->name('staff.update')
+        ->middleware('role:admin');
+    Route::patch('/staff-management/{id}/reset-password', [StaffController::class, 'resetPassword'])
+        ->name('staff.reset-password')
+        ->middleware('role:admin');
+    Route::delete('/staff-management/{id}', [StaffController::class, 'destroy'])
+        ->name('staff.destroy')
+        ->middleware('role:admin');
+    Route::patch('/staff-management/admin/change-password', [StaffController::class, 'changeAdminPassword'])
+        ->name('staff.admin.change-password')
         ->middleware('role:admin');
 
     // Profile
