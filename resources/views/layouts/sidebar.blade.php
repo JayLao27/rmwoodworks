@@ -173,6 +173,34 @@ class="relative z-50"
             </a>
             @endif
 
+            <!-- Staff Management -->
+            @if(auth()->user()->hasAnyRole(['admin']))
+            <a href="{{ route('staff.index') }}" 
+               class="flex items-center px-3 py-2 rounded-lg transition-all duration-200 group relative mb-0.5 {{ request()->routeIs('staff*') ? 'bg-gradient-to-r from-orange-600/90 to-red-600/90 text-white shadow-lg ring-1 ring-white/10' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}"
+               :class="sidebarOpen ? 'justify-start gap-3' : 'justify-center'">
+                
+                @if(request()->routeIs('staff*'))
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-white rounded-r-sm shadow-[0_0_8px_rgba(255,255,255,0.5)]" x-show="sidebarOpen"></div>
+                @endif
+
+                <div class="{{ request()->routeIs('staff*') ? 'text-white' : 'text-slate-400 group-hover:text-orange-400' }} transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+
+                <span x-show="sidebarOpen" 
+                      class="text-sm font-medium whitespace-nowrap {{ request()->routeIs('staff*') ? 'text-white' : '' }}">
+                    Staff Management
+                </span>
+
+                <div x-show="!sidebarOpen" 
+                     class="absolute left-14 bg-slate-800 text-white text-[10px] px-2 py-1 rounded-md shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none border border-slate-700 whitespace-nowrap z-50">
+                    Staff Management
+                </div>
+            </a>
+            @endif
+
             <!-- ===== SUBSYSTEMS SECTION ===== -->
             <div class="mt-3 mb-1">
                 <div x-show="sidebarOpen" class="px-3 text-[9px] font-bold uppercase tracking-widest text-slate-600">Subsystems</div>
