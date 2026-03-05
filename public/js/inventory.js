@@ -183,9 +183,7 @@
                         <label class="block text-xs font-bold text-gray-700 mb-2">Material *</label>
                         <select name="materials[${materialRowCount-1}][material_id]" class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all" required>
                             <option value="">Select a material...</option>
-                            @foreach($materials as $material)
-                                <option value="{{ $material->id }}">{{ $material->name }} ({{ $material->unit }})</option>
-                            @endforeach
+                            ${(window.inventoryMaterials || []).map(m => `<option value="${m.id}">${escHtml(m.name)} (${escHtml(m.unit)})</option>`).join('')}
                         </select>
                     </div>
                     <div class="flex-1">
@@ -260,9 +258,7 @@
                         <label class="block text-xs font-bold text-gray-700 mb-2">Material *</label>
                         <select name="materials[${editMaterialRowCount-1}][material_id]" class="w-full border-2 border-gray-300 rounded-xl px-3 py-2 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all" required>
                             <option value="">Select a material...</option>
-                            @foreach($materials as $material)
-                                <option value="{{ $material->id }}" ${materialId == {{ $material->id }} ? 'selected' : ''}>{{ $material->name }} ({{ $material->unit }})</option>
-                            @endforeach
+                            ${(window.inventoryMaterials || []).map(m => `<option value="${m.id}" ${materialId == m.id ? 'selected' : ''}>${escHtml(m.name)} (${escHtml(m.unit)})</option>`).join('')}
                         </select>
                     </div>
                     <div class="flex-1">
@@ -1231,14 +1227,12 @@
                             }
                         })
                         .catch(error => {
-                            // Display exception error messages
                             const errorMessage = error.message || 'An error occurred while receiving stock.';
                             showErrorNotification(errorMessage);
                             console.error('Stock receive error:', error);
                         });
                 });
             }
-            // Quick Filter Logic
             function setQuickFilter(period) {
                 const today = new Date();
                 let fromDate = new Date();
@@ -1246,7 +1240,6 @@
 
                 switch(period) {
                     case 'today':
-                        // fromDate and toDate already initialized to today
                         break;
                     case 'yesterday':
                         fromDate.setDate(today.getDate() - 1);
@@ -1254,19 +1247,15 @@
                         break;
                     case 'last_week':
                         fromDate.setDate(today.getDate() - 7);
-                        // toDate is today
                         break;
                     case '1_month':
                         fromDate.setMonth(today.getMonth() - 1);
-                        // toDate is today
                         break;
                     case '1_year':
                         fromDate.setFullYear(today.getFullYear() - 1);
-                        // toDate is today
                         break;
                 }
 
-                // Format dates as YYYY-MM-DD
                 const formatDate = (date) => {
                     const year = date.getFullYear();
                     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -1277,11 +1266,9 @@
                 document.getElementById('logDateFromFilter').value = formatDate(fromDate);
                 document.getElementById('logDateToFilter').value = formatDate(toDate);
                 
-                // Trigger reload
                 loadStockLogs();
             }
 
-            // Toast Notification Functions
             function showSuccessNotification(message) {
                 const notif = document.createElement('div');
                 notif.className = 'fixed top-5 right-5 z-[9999] animate-fadeIn';
