@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use RyanChandler\LaravelCloudflareTurnstile\Rules\Turnstile;
 use Illuminate\Validation\Rules;
 class AuthController extends Controller
@@ -19,6 +20,7 @@ class AuthController extends Controller
 
 	public function login(Request $request)
 	{
+		// Step 1 — Input validation (422)
 		try {
 			$rules = [
 				'email' => 'required|email',
@@ -40,13 +42,30 @@ class AuthController extends Controller
 			return back()->withErrors($e->errors())->withInput();
 		}
 
-		if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-			$request->session()->regenerate();
+		// Step 2 — Attempt authentication; isolate credential failures (401) from server errors (500)
+		try {
+			$authenticated = Auth::attempt(
+				$request->only('email', 'password'),
+				$request->boolean('remember')
+			);
+		} catch (\Exception $e) {
+			\Log::error('Authentication server error', ['exception' => $e->getMessage()]);
+			return back(500)
+				->withErrors(['server' => 'A server error occurred while processing your login. Please try again later.'])
+				->withInput()
+				->with('error_type', 'server');
+		}
 
+		if ($authenticated) {
+			$request->session()->regenerate();
 			return redirect()->intended($this->getHomeRoute());
 		}
 
-		return back()->withErrors(['email' => 'Invalid credentials'])->onlyInput('email');
+		// Step 3 — Invalid credentials (401): dedicated key so the view can render a distinct message
+		return back()
+			->withErrors(['credentials' => 'The email or password you entered is incorrect. Please try again.'])
+			->onlyInput('email')
+			->with('error_type', 'credentials');
 	}
 
 	/**
