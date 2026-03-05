@@ -210,33 +210,39 @@
             // Edit material row counter
             let editMaterialRowCount = 0;
 
-            function openEditProductModal(productId) {
-                fetch(`/inventory/${productId}/edit-product`)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('editProductName').value = data.product_name;
-                        document.getElementById('editProductUnit').value = data.unit;
-                        document.getElementById('editProductCategory').value = data.category;
-                        document.getElementById('editProductProductionCost').value = data.production_cost;
-                        document.getElementById('editProductSellingPrice').value = data.selling_price;
-                        
-                        document.getElementById('editProductForm').action = `/inventory/${productId}`;
-                        
-                        document.getElementById('editMaterialsContainer').innerHTML = '';
-                        editMaterialRowCount = 0;
-                        
-                        if (data.materials && data.materials.length > 0) {
-                            data.materials.forEach(material => {
-                                addEditMaterialRow(material.id, material.name, material.unit, material.pivot.quantity_needed);
-                            });
-                        }
-                        
-                        document.getElementById('editProductModal').classList.remove('hidden');
-                    })
-                    .catch(error => {
-                        console.error('Error loading product:', error);
-                        showErrorNotification('Error loading product details');
-                    });
+            async function openEditProductModal(productId) {
+                try {
+                    const response = await fetch(`/inventory/${productId}/edit-product`);
+                    if (!response.ok) {
+                        let errMsg;
+                        try { const d = await response.json(); errMsg = d.message; } catch (_) {}
+                        if (response.status === 404) throw new Error(errMsg || 'Product not found (404).');
+                        if (response.status === 500) throw new Error(errMsg || 'Server error (500). Please try again.');
+                        throw new Error(errMsg || `Failed to load product (${response.status}).`);
+                    }
+                    const data = await response.json();
+                    document.getElementById('editProductName').value = data.product_name;
+                    document.getElementById('editProductUnit').value = data.unit;
+                    document.getElementById('editProductCategory').value = data.category;
+                    document.getElementById('editProductProductionCost').value = data.production_cost;
+                    document.getElementById('editProductSellingPrice').value = data.selling_price;
+
+                    document.getElementById('editProductForm').action = `/inventory/${productId}`;
+
+                    document.getElementById('editMaterialsContainer').innerHTML = '';
+                    editMaterialRowCount = 0;
+
+                    if (data.materials && data.materials.length > 0) {
+                        data.materials.forEach(material => {
+                            addEditMaterialRow(material.id, material.name, material.unit, material.pivot.quantity_needed);
+                        });
+                    }
+
+                    document.getElementById('editProductModal').classList.remove('hidden');
+                } catch (error) {
+                    console.error('Error loading product:', error);
+                    showErrorNotification(error.message || 'Error loading product details.');
+                }
             }
 
             function closeEditProductModal() {
@@ -282,13 +288,19 @@
                 }
             }
 
-            function openStockModal(type, id) {
+            async function openStockModal(type, id) {
                 document.getElementById('stockModal').style.display = 'flex';
-                
-                fetch(`/inventory/${id}/details?type=${type}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.getElementById('itemName').textContent = data.item.name || data.item.product_name || 'Item';
+                try {
+                    const response = await fetch(`/inventory/${id}/details?type=${type}`);
+                    if (!response.ok) {
+                        let errMsg;
+                        try { const d = await response.json(); errMsg = d.message; } catch (_) {}
+                        if (response.status === 404) throw new Error(errMsg || 'Item not found (404).');
+                        if (response.status === 500) throw new Error(errMsg || 'Server error (500). Please try again.');
+                        throw new Error(errMsg || `Failed to load item details (${response.status}).`);
+                    }
+                    const data = await response.json();
+                    document.getElementById('itemName').textContent = data.item.name || data.item.product_name || 'Item';
                         const currentStockCard = document.getElementById('currentStockCard');
                         const minimumStockCard = document.getElementById('minimumStockCard');
                         const unitCostCard = document.getElementById('unitCostCard');
@@ -307,10 +319,10 @@
                             productionCostCard.classList.remove('hidden');
 
                             document.getElementById('unitCost').textContent = data.item.selling_price
-                                ? 'â‚±' + parseFloat(data.item.selling_price).toFixed(2)
+                                ? '₱' + parseFloat(data.item.selling_price).toFixed(2)
                                 : 'N/A';
                             document.getElementById('productionCost').textContent = data.item.production_cost
-                                ? 'â‚±' + parseFloat(data.item.production_cost).toFixed(2)
+                                ? '₱' + parseFloat(data.item.production_cost).toFixed(2)
                                 : 'N/A';
                         } else {
                             stockModalContent.classList.remove('max-w-2xl');
@@ -325,7 +337,7 @@
                             document.getElementById('currentStock').textContent = data.item.current_stock + ' ' + (data.item.unit || '');
                             document.getElementById('minimumStock').textContent = data.item.minimum_stock || '-';
                             document.getElementById('unitCost').textContent = data.item.unit_cost
-                                ? 'â‚±' + parseFloat(data.item.unit_cost).toFixed(2)
+                                ? '₱' + parseFloat(data.item.unit_cost).toFixed(2)
                                 : 'N/A';
                         }
 
@@ -342,7 +354,7 @@
                             if (data.materials && data.materials.length > 0) {
                                 materialsList.innerHTML = data.materials.map(material => `
                                     <div class="flex items-center justify-between px-6 py-4">
-                                        <div class="text-gray-900 font-medium">â€¢ ${material.name}</div>
+                                        <div class="text-gray-900 font-medium">• ${material.name}</div>
                                         <div class="text-gray-700 font-bold">${material.quantity_needed} ${material.unit}</div>
                                     </div>
                                 `).join('');
@@ -375,18 +387,18 @@
                                 materialMovementsBody.innerHTML = '<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No movements recorded yet</td></tr>';
                             }
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching item details:', error);
-                        const materialsSection = document.getElementById('productMaterialsSection');
-                        const materialsList = document.getElementById('productMaterialsList');
-                        materialsSection.classList.add('hidden');
-                        materialsList.innerHTML = '';
-                        const materialMovementsSection = document.getElementById('materialMovementsSection');
-                        const materialMovementsBody = document.getElementById('materialMovementsBody');
-                        materialMovementsSection.classList.add('hidden');
-                        materialMovementsBody.innerHTML = '';
-                    });
+                } catch (error) {
+                    console.error('Error fetching item details:', error);
+                    showErrorNotification(error.message || 'Failed to load item details.');
+                    const materialsSection = document.getElementById('productMaterialsSection');
+                    const materialsList = document.getElementById('productMaterialsList');
+                    if (materialsSection) materialsSection.classList.add('hidden');
+                    if (materialsList) materialsList.innerHTML = '';
+                    const materialMovementsSection = document.getElementById('materialMovementsSection');
+                    const materialMovementsBody = document.getElementById('materialMovementsBody');
+                    if (materialMovementsSection) materialMovementsSection.classList.add('hidden');
+                    if (materialMovementsBody) materialMovementsBody.innerHTML = '';
+                }
             }
 
             function closeStockModal() {
@@ -418,25 +430,33 @@
                 document.getElementById('deleteConfirmButton').disabled = true;
             }
 
-            function confirmDelete() {
+            async function confirmDelete() {
                 const deleteBtn = document.getElementById('deleteConfirmButton');
                 if (deleteBtn) {
                     deleteBtn.disabled = true;
                     deleteBtn.innerHTML = '<svg class="inline w-4 h-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>Deleting...';
                 }
 
-                fetch(`/inventory/${deleteConfirmState.id}/${deleteConfirmState.type}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({ _method: 'DELETE' })
-                })
-                .then(r => r.json())
-                .then(data => {
+                try {
+                    const response = await fetch(`/inventory/${deleteConfirmState.id}/${deleteConfirmState.type}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({ _method: 'DELETE' })
+                    });
+                    if (!response.ok) {
+                        let errMsg;
+                        try { const d = await response.json(); errMsg = d.message; } catch (_) {}
+                        if (response.status === 404) throw new Error(errMsg || 'Item not found (404). It may have already been deleted.');
+                        if (response.status === 403) throw new Error(errMsg || 'Permission denied (403). You are not allowed to delete this item.');
+                        if (response.status === 500) throw new Error(errMsg || 'Server error (500). Please try again.');
+                        throw new Error(errMsg || `Delete failed (${response.status}).`);
+                    }
+                    const data = await response.json();
                     if (data.success) {
                         const card = document.querySelector(`[data-id="${deleteConfirmState.id}"][data-type="${deleteConfirmState.type}"]`);
                         if (card) {
@@ -452,11 +472,11 @@
                         showErrorNotification(data.message || 'Failed to delete item.');
                         if (deleteBtn) { deleteBtn.disabled = false; deleteBtn.textContent = 'Delete Permanently'; }
                     }
-                })
-                .catch(() => {
-                    showErrorNotification('An error occurred while deleting the item.');
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    showErrorNotification(error.message || 'An error occurred while deleting the item.');
                     if (deleteBtn) { deleteBtn.disabled = false; deleteBtn.textContent = 'Delete Permanently'; }
-                });
+                }
             }
 
             // Update delete button state based on input
@@ -576,7 +596,7 @@
                         </div>
                         <div class="flex items-center space-x-2">
                             ${badge}
-                            <span class="text-white font-bold text-lg">&#8369;${phpNum(item.unit_cost)}</span>
+                            <span class="text-white font-bold text-lg">₱${phpNum(item.unit_cost)}</span>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2 text-sm">
@@ -615,17 +635,17 @@
                             <p class="text-sm text-slate-300 font-medium mt-1">Finished Product</p>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <span class="text-white font-bold text-lg">&#8369;${phpNum(item.selling_price)}</span>
+                            <span class="text-white font-bold text-lg">₱${phpNum(item.selling_price)}</span>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2 text-sm">
                         <div>
                             <span class="text-slate-400 font-medium text-xs">Production Cost</span>
-                            <p class="text-white font-bold text-lg mt-1">&#8369;${phpNum(item.production_cost)}</p>
+                            <p class="text-white font-bold text-lg mt-1">₱${phpNum(item.production_cost)}</p>
                         </div>
                         <div>
                             <span class="text-slate-400 font-medium text-xs">Selling Price</span>
-                            <p class="text-white font-bold text-lg mt-1">&#8369;${phpNum(item.selling_price)}</p>
+                            <p class="text-white font-bold text-lg mt-1">₱${phpNum(item.selling_price)}</p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-2 mt-2 justify-end">
@@ -647,7 +667,7 @@
              * Generic AJAX form submit helper.
              * Serialises FormData, sends via fetch, calls onSuccess(data) on success.
              */
-            function submitInventoryForm(form, url, method, onSuccess) {
+            async function submitInventoryForm(form, url, method, onSuccess) {
                 const submitBtn = form.querySelector('[type="submit"]');
                 if (submitBtn) {
                     submitBtn.disabled = true;
@@ -656,27 +676,34 @@
                 }
                 const formData = new FormData(form);
                 if (method !== 'POST') formData.append('_method', method);
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                })
-                .then(r => { if (!r.ok) return r.json().then(d => { throw d; }); return r.json(); })
-                .then(data => {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: formData
+                    });
+                    if (!response.ok) {
+                        let errMsg;
+                        try { const d = await response.json(); errMsg = d.message || (d.errors ? Object.values(d.errors).flat().join(' ') : null); } catch (_) {}
+                        if (response.status === 404) throw new Error(errMsg || 'Resource not found (404).');
+                        if (response.status === 422) throw new Error(errMsg || 'Validation failed (422). Please check your inputs.');
+                        if (response.status === 403) throw new Error(errMsg || 'Permission denied (403).');
+                        if (response.status === 500) throw new Error(errMsg || 'Server error (500). Please try again.');
+                        throw new Error(errMsg || `Request failed (${response.status}).`);
+                    }
+                    const data = await response.json();
                     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.originalText || 'Save'; }
                     if (data.success) { onSuccess(data); }
                     else { showErrorNotification(data.message || 'An error occurred.'); }
-                })
-                .catch(err => {
+                } catch (error) {
+                    console.error('Form submit error:', error);
                     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtn.dataset.originalText || 'Save'; }
-                    const msg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'An error occurred.');
-                    showErrorNotification(msg);
-                });
+                    showErrorNotification(error.message || 'An error occurred.');
+                }
             }
 
             // â”€â”€ Attach form submit interceptors (AJAX) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -755,7 +782,7 @@
                 document.getElementById('stockLogsModal').classList.add('hidden');
             }
 
-            function loadStockLogs() {
+            async function loadStockLogs() {
                 const dateFrom = document.getElementById('logDateFromFilter')?.value || '';
                 const dateTo = document.getElementById('logDateToFilter')?.value || '';
 
@@ -764,16 +791,26 @@
                 if (dateTo) params.append('date_to', dateTo);
 
                 const stockMovementsUrl = `/inventory/stock-movements/report?${params.toString()}`;
-                fetch(stockMovementsUrl)
-                    .then(res => res.json())
-                    .then(movementData => {
-                        if (movementData.success) {
-                            displayStockLogs(movementData.movements, movementData.summary);
-                            // Re-apply search filter after data reload
-                            filterStockLogs();
-                        }
-                    })
-                    .catch(err => console.error('Error loading logs:', err));
+                try {
+                    const res = await fetch(stockMovementsUrl);
+                    if (!res.ok) {
+                        let errMsg;
+                        try { const d = await res.json(); errMsg = d.message; } catch (_) {}
+                        if (res.status === 404) throw new Error(errMsg || 'Stock movements endpoint not found (404).');
+                        if (res.status === 500) throw new Error(errMsg || 'Server error (500) loading stock logs.');
+                        throw new Error(errMsg || `Failed to load stock logs (${res.status}).`);
+                    }
+                    const movementData = await res.json();
+                    if (movementData.success) {
+                        displayStockLogs(movementData.movements, movementData.summary);
+                        filterStockLogs();
+                    } else {
+                        showErrorNotification(movementData.message || 'Failed to load stock logs.');
+                    }
+                } catch (error) {
+                    console.error('Error loading stock logs:', error);
+                    showErrorNotification(error.message || 'An error occurred while loading stock logs.');
+                }
             }
 
             function filterStockLogs() {
@@ -1019,10 +1056,19 @@
                     </div>
                 `;
 
-                fetch(`/procurement/purchase-orders/${orderId}/items`)
-                    .then(response => response.json())  
-                    .then(data => {
-                        if (!data.success || !data.items || data.items.length === 0) {
+                (async () => {
+                try {
+                    const response = await fetch(`/procurement/purchase-orders/${orderId}/items`);
+                    if (!response.ok) {
+                        let errMsg;
+                        try { const d = await response.json(); errMsg = d.message; } catch (_) {}
+                        if (response.status === 404) throw new Error(errMsg || 'Purchase order not found (404).');
+                        if (response.status === 403) throw new Error(errMsg || 'Access denied (403).');
+                        if (response.status === 500) throw new Error(errMsg || 'Server error (500). Please try again.');
+                        throw new Error(errMsg || `Failed to load PO items (${response.status}).`);
+                    }
+                    const data = await response.json();
+                    if (!data.success || !data.items || data.items.length === 0) {
                             container.innerHTML = `
                                 <div class="flex flex-col items-center justify-center py-12 px-3">
                                     <svg class="w-16 h-16 text-orange-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1136,19 +1182,20 @@
                         `).join('');
 
                         container.innerHTML = itemsHtml;
-                    })
-                    .catch(() => {
-                        container.innerHTML = `
-                            <div class="flex flex-col items-center justify-center py-12 px-3">
-                                <svg class="w-16 h-16 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p class="text-red-600 text-sm font-bold">Error Loading Items</p>
-                                <p class="text-slate-500 text-xs mt-1">Failed to load items for this purchase order</p>
-                            </div>
-                        `;
-                        itemsCount.classList.add('hidden');
-                    });
+                } catch (error) {
+                    console.error('Error loading PO items:', error);
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-12 px-3">
+                            <svg class="w-16 h-16 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="text-red-600 text-sm font-bold">Error Loading Items</p>
+                            <p class="text-slate-500 text-xs mt-1">${error.message || 'Failed to load items for this purchase order'}</p>
+                        </div>
+                    `;
+                    itemsCount.classList.add('hidden');
+                }
+                })();
             }
 
             // Calculate net quantity after defects
@@ -1176,7 +1223,7 @@
             // Form submission handler
             const receiveStockForm = document.getElementById('receiveStockForm');
             if (receiveStockForm) {
-                receiveStockForm.addEventListener('submit', function (e) {
+                receiveStockForm.addEventListener('submit', async function (e) {
                     e.preventDefault();
 
                     const purchaseOrderInput = document.getElementById('selectedPurchaseOrderId');
@@ -1190,47 +1237,35 @@
                     const formData = new FormData(receiveStockForm);
                     formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
 
-                    fetch(`/procurement/purchase-orders/${purchaseOrderId}/receive-stock`, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: formData
-                    })
-                        .then(response => {
-                            // Handle HTTP error responses
-                            if (!response.ok) {
-                                return response.json().then(data => {
-                                    throw {
-                                        status: response.status,
-                                        message: data.message || `Error: ${response.statusText}`
-                                    };
-                                }).catch(err => {
-                                    if (err.message) throw err;
-                                    throw {
-                                        status: response.status,
-                                        message: response.status === 404 ? 'Invalid PO. Purchase order not found.' : `Error: ${response.statusText}`
-                                    };
-                                });
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success) {
-                                showSuccessNotification(data.message || 'Stock received successfully.');
-                                window.location.reload();
-                            } else {
-                                // Exception 1.1: Invalid PO error display
-                                // Exception 2.1: Duplicate receipt error display
-                                // Exception 2.2: Database error display
-                                showErrorNotification(data.message || 'Failed to receive stock.');
-                            }
-                        })
-                        .catch(error => {
-                            const errorMessage = error.message || 'An error occurred while receiving stock.';
-                            showErrorNotification(errorMessage);
-                            console.error('Stock receive error:', error);
+                    try {
+                        const response = await fetch(`/procurement/purchase-orders/${purchaseOrderId}/receive-stock`, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: formData
                         });
+                        if (!response.ok) {
+                            let errMsg;
+                            try { const d = await response.json(); errMsg = d.message; } catch (_) {}
+                            if (response.status === 404) throw new Error(errMsg || 'Purchase order not found (404). It may have been cancelled or deleted.');
+                            if (response.status === 422) throw new Error(errMsg || 'Validation failed (422). Please check the quantities entered.');
+                            if (response.status === 409) throw new Error(errMsg || 'Conflict (409). This stock may have already been received.');
+                            if (response.status === 403) throw new Error(errMsg || 'Permission denied (403).');
+                            if (response.status === 500) throw new Error(errMsg || 'Server error (500). Please try again.');
+                            throw new Error(errMsg || `Failed to receive stock (${response.status}).`);
+                        }
+                        const data = await response.json();
+                        if (data.success) {
+                            showSuccessNotification(data.message || 'Stock received successfully.');
+                            window.location.reload();
+                        } else {
+                            showErrorNotification(data.message || 'Failed to receive stock.');
+                        }
+                    } catch (error) {
+                        console.error('Stock receive error:', error);
+                        showErrorNotification(error.message || 'An error occurred while receiving stock.');
+                    }
                 });
             }
             function setQuickFilter(period) {
