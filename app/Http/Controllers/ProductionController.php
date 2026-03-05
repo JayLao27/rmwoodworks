@@ -318,67 +318,87 @@ class ProductionController extends Controller
 
     public function complete(WorkOrder $workOrder, Request $request)
     {
+        // WBT_PROD_009: Isolated check — already completed (HTTP 400, no DB changes)
         if ($workOrder->status === 'completed') {
-            $message = 'Work order is already completed.';
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $message
+                    'error_code' => 'ALREADY_COMPLETED',
+                    'message' => 'This work order has already been completed.',
                 ], 400);
             }
-            return redirect()->back()->with('info', $message);
+            return redirect()->back()->with('info', 'This work order has already been completed.');
         }
-        
-        $workOrder->update([
-            'status' => 'completed',
-            'completion_quantity' => $workOrder->quantity,
-        ]);
 
-        $workOrder->loadMissing(['product', 'salesOrder']);
-    
-        // Update product inventory (Stock In)
-        if ($workOrder->product) {
-            $qtyCompleted = $workOrder->completion_quantity > 0 ? $workOrder->completion_quantity : $workOrder->quantity;
-            
-            // Record the inventory movement for the finished product
-            InventoryMovement::create([
-                'item_type' => 'product',
-                'item_id' => $workOrder->product_id,
-                'movement_type' => 'in',
-                'quantity' => $qtyCompleted,
-                'reference_type' => WorkOrder::class,
-                'reference_id' => $workOrder->id,
-                'notes' => sprintf('Production completed for WO-%s (Stock In: %s)', $workOrder->order_number, now()->toDateTimeString()),
+        DB::beginTransaction();
+        try {
+            $workOrder->update([
                 'status' => 'completed',
-                'user_id' => auth()->id()
+                'completion_quantity' => $workOrder->quantity,
             ]);
 
-            // Increment current stock of the product
-            $workOrder->product->increment('current_stock', $qtyCompleted);
-        }
+            $workOrder->loadMissing(['product', 'salesOrder']);
 
-        // Check if all work orders for this sales order are completed
-        if ($workOrder->salesOrder) {
-            $totalWorkOrders = $workOrder->salesOrder->workOrders()->where('status', '!=', 'cancelled')->count();
-            $completedWorkOrders = $workOrder->salesOrder->workOrders()->where('status', 'completed')->count();
-            
-            if ($totalWorkOrders > 0 && $totalWorkOrders === $completedWorkOrders) {
-                $workOrder->salesOrder->update(['status' => 'Ready']);
+            // Update product inventory (Stock In)
+            if ($workOrder->product) {
+                $qtyCompleted = $workOrder->completion_quantity > 0 ? $workOrder->completion_quantity : $workOrder->quantity;
+
+                // Record the inventory movement for the finished product
+                InventoryMovement::create([
+                    'item_type' => 'product',
+                    'item_id' => $workOrder->product_id,
+                    'movement_type' => 'in',
+                    'quantity' => $qtyCompleted,
+                    'reference_type' => WorkOrder::class,
+                    'reference_id' => $workOrder->id,
+                    'notes' => sprintf('Production completed for WO-%s (Stock In: %s)', $workOrder->order_number, now()->toDateTimeString()),
+                    'status' => 'completed',
+                    'user_id' => auth()->id()
+                ]);
+
+                // Increment current stock of the product
+                $workOrder->product->increment('current_stock', $qtyCompleted);
             }
-        }
-        
-        \App\Models\SystemActivity::log('Production', 'Work Order Completed', "Work Order #{$workOrder->order_number} for {$workOrder->product_name} has been completed.", 'emerald');
 
-        $message = 'Work order marked as completed and inventory updated.';
-        
-        if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => $message
+            // Check if all work orders for this sales order are completed
+            if ($workOrder->salesOrder) {
+                $totalWorkOrders = $workOrder->salesOrder->workOrders()->where('status', '!=', 'cancelled')->count();
+                $completedWorkOrders = $workOrder->salesOrder->workOrders()->where('status', 'completed')->count();
+
+                if ($totalWorkOrders > 0 && $totalWorkOrders === $completedWorkOrders) {
+                    $workOrder->salesOrder->update(['status' => 'Ready']);
+                }
+            }
+
+            \App\Models\SystemActivity::log('Production', 'Work Order Completed', "Work Order #{$workOrder->order_number} for {$workOrder->product_name} has been completed.", 'emerald');
+
+            DB::commit();
+
+            $message = 'Work order marked as completed and inventory updated.';
+
+            if ($request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $message]);
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Work order completion failed', [
+                'work_order_id' => $workOrder->id,
+                'exception' => $e->getMessage(),
             ]);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error_code' => 'COMPLETION_FAILED',
+                    'message' => 'Failed to complete the work order: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Failed to complete the work order. Please try again.');
         }
-        
-        return redirect()->back()->with('success', $message);
     }
 
     public function show(WorkOrder $workOrder)
