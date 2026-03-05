@@ -1060,6 +1060,9 @@
             </div>
         </div>
 
+        <script>
+            window.inventoryMaterials = @json(($materials ?? collect())->map(fn($m) => ['id' => $m->id, 'name' => $m->name, 'unit' => $m->unit])->values());
+        </script>
         <script src="{{ asset('js/inventory.js') }}?v={{ filemtime(public_path('js/inventory.js')) }}"></script>
         <script>
             @if(session('success'))

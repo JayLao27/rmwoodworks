@@ -1275,7 +1275,6 @@ $paymentBg = [
 <script src="{{ asset('js/sales.js') }}?v={{ filemtime(public_path('js/sales.js')) }}"></script>
 <script src="{{ asset('js/sales-ajax.js') }}?v={{ filemtime(public_path('js/sales-ajax.js')) }}"></script>
 
-
     @foreach($salesOrders as $order)
         @include('partials.sales-order-modals', ['order' => $order])
     @endforeach
