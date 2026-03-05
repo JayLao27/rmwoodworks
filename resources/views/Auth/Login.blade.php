@@ -22,6 +22,19 @@
             font-family: 'Outfit', sans-serif;
         }
 
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            15%       { transform: translateX(-6px); }
+            30%       { transform: translateX(6px); }
+            45%       { transform: translateX(-4px); }
+            60%       { transform: translateX(4px); }
+            75%       { transform: translateX(-2px); }
+            90%       { transform: translateX(2px); }
+        }
+        .animate-shake {
+            animation: shake 0.55s ease-in-out;
+        }
+
         .font-heading {
             font-family: 'Playfair Display', serif;
         }
@@ -68,10 +81,10 @@
         <x-turnstile.scripts />
     @endif
 </head>
-<body class="min-h-screen bg-[#FDFBF7] relative overflow-hidden flex items-center justify-center">
+<body class="min-h-screen bg-[#FDFBF7] relative overflow-x-hidden flex items-center justify-center py-8">
 
     <!-- Background Decoration -->
-    <div class="absolute inset-0 z-0">
+    <div class="fixed inset-0 z-0">
         <!-- Abstract Shapes -->
         <div class="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-br from-[#FFE4B5]/40 to-[#FFDAB9]/40 rounded-full blur-[100px]" style="animation-duration: 10s;"></div>
         <div class="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-gradient-to-tr from-[#DEB887]/30 to-[#F4A460]/20 rounded-full blur-[80px]"></div>
@@ -139,8 +152,32 @@
                     <p class="text-[#8B735B]">Sign in to access your dashboard</p>
                 </div>
 
-                <!-- Error Alert -->
-                @if($errors->any())
+                <!-- Error Alert: Invalid Credentials (401) -->
+                @if($errors->has('credentials'))
+                    <div class="mb-6 bg-red-50/90 backdrop-blur-sm border-2 border-red-300 rounded-xl p-4 flex gap-3 text-red-800 animate-shake" id="credentialsError">
+                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-bold">Invalid Credentials</p>
+                            <p class="text-sm mt-0.5">{{ $errors->first('credentials') }}</p>
+                        </div>
+                    </div>
+
+                <!-- Error Alert: Server Error (500) -->
+                @elseif($errors->has('server'))
+                    <div class="mb-6 bg-amber-50/90 backdrop-blur-sm border-2 border-amber-300 rounded-xl p-4 flex gap-3 text-amber-800">
+                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-bold">Server Error</p>
+                            <p class="text-sm mt-0.5">{{ $errors->first('server') }}</p>
+                        </div>
+                    </div>
+
+                <!-- Error Alert: Validation Errors (422) -->
+                @elseif($errors->any())
                     <div class="mb-6 bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl p-4 flex gap-3 text-red-800">
                         <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         <ul class="text-sm list-disc list-inside">
@@ -165,7 +202,7 @@
                                 </svg>
                             </div>
                             <input type="email" id="email" name="email" value="{{ old('email') }}" required autofocus
-                                class="custom-input w-full bg-white/60 border border-[#DEB887]/50 rounded-xl px-4 py-3.5 pl-11 text-[#4A3728] placeholder-[#8B735B]/50 font-medium focus:outline-none focus:bg-white"
+                                class="custom-input w-full bg-white/60 border rounded-xl px-4 py-3.5 pl-11 text-[#4A3728] placeholder-[#8B735B]/50 font-medium focus:outline-none focus:bg-white {{ $errors->has('credentials') ? 'border-red-400 bg-red-50/50 focus:ring-2 focus:ring-red-300' : 'border-[#DEB887]/50' }}"
                                 placeholder="role@rmwoodworks.com">
                         </div>
                     </div>
@@ -183,7 +220,7 @@
                                 </svg>
                             </div>
                             <input type="password" id="password" name="password" required
-                                class="custom-input w-full bg-white/60 border border-[#DEB887]/50 rounded-xl px-4 py-3.5 pl-11 text-[#4A3728] placeholder-[#8B735B]/50 font-medium focus:outline-none focus:bg-white"
+                                class="custom-input w-full bg-white/60 border rounded-xl px-4 py-3.5 pl-11 text-[#4A3728] placeholder-[#8B735B]/50 font-medium focus:outline-none focus:bg-white {{ $errors->has('credentials') ? 'border-red-400 bg-red-50/50 focus:ring-2 focus:ring-red-300' : 'border-[#DEB887]/50' }}"
                                 placeholder="••••••••">
                         </div>
                     </div>
