@@ -25,13 +25,13 @@
 			const unitPriceHidden = firstRow.querySelector('.sales-item-unit-price-hidden');
 			if (unitPriceHidden) unitPriceHidden.value = '';
 			const lineTotal = firstRow.querySelector('.sales-item-line-total');
-			if (lineTotal) lineTotal.textContent = 'â‚±0.00';
+			if (lineTotal) lineTotal.textContent = '₱0.00';
 			firstRow.querySelectorAll('.sales-product-option').forEach(opt => opt.classList.remove('hidden'));
 			const qtyInput = firstRow.querySelector('.sales-item-qty');
 			if (qtyInput) qtyInput.value = '';
 		}
 		const grandTotal = document.getElementById('salesGrandTotal');
-		if (grandTotal) grandTotal.textContent = 'â‚±0.00';
+		if (grandTotal) grandTotal.textContent = '₱0.00';
 	}
 
 	function openEditCustomerModal(customerId, name, type, phone, email) {
@@ -62,7 +62,7 @@
 		document.getElementById('viewCustomerPhone').textContent = customer.phone || 'â€”';
 		document.getElementById('viewCustomerEmail').textContent = customer.email || 'â€”';
 		document.getElementById('viewCustomerOrders').textContent = customer.totalOrders || '0';
-		document.getElementById('viewCustomerSpent').textContent = 'â‚±' + (customer.totalSpent ? parseFloat(customer.totalSpent).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') : '0.00');
+		document.getElementById('viewCustomerSpent').textContent = '₱' + (customer.totalSpent ? parseFloat(customer.totalSpent).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') : '0.00');
 
 		const productsContainer = document.getElementById('viewCustomerProducts');
 		if (customer.productsSummary && Object.keys(customer.productsSummary).length > 0) {
@@ -274,7 +274,7 @@ function salesToNumber(value) {
 }
 
 function salesFormatCurrency(num) {
-	return 'â‚±' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+	return '₱' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 async function salesFetchLatestPrice(productId) {
@@ -355,7 +355,7 @@ function addSalesProductRow() {
 	if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
 
 	const lineTotal = newRow.querySelector('.sales-item-line-total');
-	if (lineTotal) lineTotal.textContent = 'â‚±0.00';
+	if (lineTotal) lineTotal.textContent = '₱0.00';
 
 	const resultsList = newRow.querySelector('.sales-product-results');
 	if (resultsList) resultsList.classList.add('hidden');
@@ -471,7 +471,7 @@ function clearSalesProductSelection(btn) {
 	if (unitPriceDisplay) unitPriceDisplay.value = '';
 	if (unitPriceHidden) unitPriceHidden.value = '';
 	const lineTotal = row.querySelector('.sales-item-line-total');
-	if (lineTotal) lineTotal.textContent = 'â‚±0.00';
+	if (lineTotal) lineTotal.textContent = '₱0.00';
 
 	input.focus();
 	updateSalesGrandTotal();
