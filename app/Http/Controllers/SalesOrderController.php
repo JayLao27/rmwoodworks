@@ -8,13 +8,14 @@ use App\Models\SalesOrder;
 use App\Models\SalesOrderItem;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class SalesOrderController extends Controller
 {
     public function index()
     {
-        // Use pagination instead of loading all
-        // Show orders that are 'Ready' and 'Paid' at the top
         $salesOrders = SalesOrder::with(['customer', 'items.product'])
             ->whereNotIn('status', ['Cancelled', 'Delivered'])
             ->orderByRaw("CASE WHEN status = 'Ready' AND payment_status = 'Paid' THEN 0 ELSE 1 END")
@@ -26,8 +27,7 @@ class SalesOrderController extends Controller
             ->latest()
             ->get();
 
-        
-        // Use cache for reference data
+
         $customers = CacheService::getCustomers();
         $products = CacheService::getProducts();
 
@@ -37,126 +37,151 @@ class SalesOrderController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'delivery_date' => 'required|date|after_or_equal:today',
-            'note' => 'nullable|string',
-            'items' => 'nullable|array',
-            'items.*.product_id' => 'required_with:items|exists:products,id',
-            'items.*.quantity' => 'required_with:items|integer|min:1',
-        ]);
-
-        $maxRetries = 5;
-        $retryCount = 0;
-        $salesOrder = null;
-
-        while ($retryCount < $maxRetries) {
-            try {
-                $orderNumber = $this->generateOrderNumber();
-
-                $salesOrder = SalesOrder::create([
-                    'order_number' => $orderNumber,
-                    'customer_id' => $validated['customer_id'],
-                    'order_date' => now()->toDateString(),
-                    'delivery_date' => $validated['delivery_date'],
-                    'due_date' => $validated['delivery_date'],
-                    'status' => 'Pending',
-                    'total_amount' => 0,
-                    'paid_amount' => 0,
-                    'payment_status' => 'Pending',
-                    'note' => $validated['note'] ?? null,
-                    'user_id' => auth()->id(),
-                ]);
-
-                // If creation succeeds, break the loop
-                break;
-            } catch (\Illuminate\Database\QueryException $e) {
-                // Check if it's a duplicate entry error (SQLSTATE 23000)
-                if ($e->getCode() == '23000' || str_contains($e->getMessage(), 'Duplicate entry')) {
-                    $retryCount++;
-                    if ($retryCount >= $maxRetries) {
-                        throw $e;
-                    }
-                    // Wait a tiny bit to allow the other transaction to finish if needed
-                    usleep(100000); // 100ms
-                    continue;
-                }
-                throw $e;
-            }
-        }
-
-        $totalAmount = 0;
-        if ($salesOrder && !empty($validated['items'])) {
-            $productIds = array_column($validated['items'], 'product_id');
-            $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
-
-            foreach ($validated['items'] as $item) {
-                $product = $products->get($item['product_id']);
-                if (!$product) { continue; }
-                $unitPrice = (float) $product->selling_price;
-                $quantity = (int) $item['quantity'];
-                $lineTotal = $unitPrice * $quantity;
-
-                SalesOrderItem::create([
-                    'sales_order_id' => $salesOrder->id,
-                    'product_id' => $product->id,
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'total_price' => $lineTotal,
-                ]);
-                $totalAmount += $lineTotal;
-            }
-        }
-
-        if ($salesOrder) {
-            $salesOrder->update(['total_amount' => $totalAmount]);
-            \App\Models\SystemActivity::log('Sales', 'Order Created', "New Sales Order {$salesOrder->order_number} created for {$salesOrder->customer->name}.", 'indigo');
-        }
-
-        if ($request->wantsJson()) {
-            // Eager load relationships for the partial
-            $salesOrder->load(['customer', 'items.product']);
-
-            // Define the same color maps used in the blade views
-            $customerTypeBg = [
-                'Wholesale' => '#64B5F6',
-                'Retail' => '#6366F1',
-                'Contractor' => '#BA68C8',
-            ];
-            $statusBg = [
-                'In production' => '#FFB74D',
-                'Pending' => '#64B5F6',
-                'Delivered' => '#81C784',
-                'Ready' => '#BA68C8',
-            ];
-            $paymentBg = [
-                'Pending' => '#ffffff',
-                'Partial' => '#FFB74D',
-                'Paid' => '#81C784',
-            ];
-
-            $viewData = [
-                'order' => $salesOrder,
-                'customerTypeBg' => $customerTypeBg,
-                'statusBg' => $statusBg,
-                'paymentBg' => $paymentBg,
-            ];
-            
-            // Render the table row partial
-            $html = view('partials.sales-order-row', $viewData)->render();
-
-            // Render the view/edit modals for this new order
-            $modalHtml = view('partials.sales-order-modals', $viewData)->render();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Sales order created.',
-                'html' => $html,
-                'modalHtml' => $modalHtml,
+        try {
+            $validated = $request->validate([
+                'customer_id' => 'required|exists:customers,id',
+                'delivery_date' => 'required|date|after_or_equal:today',
+                'note' => 'nullable|string',
+                'items' => 'nullable|array',
+                'items.*.product_id' => 'required_with:items|exists:products,id',
+                'items.*.quantity' => 'required_with:items|integer|min:1',
             ]);
+        } catch (ValidationException $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error_code' => 'VALIDATION_FAILED',
+                    'message' => 'The given data was invalid.',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            throw $e;
         }
 
-        return redirect()->back()->with('success', 'Sales order created.');
+        DB::beginTransaction();
+        try {
+            $maxRetries = 5;
+            $retryCount = 0;
+            $salesOrder = null;
+
+            while ($retryCount < $maxRetries) {
+                try {
+                    $orderNumber = $this->generateOrderNumber();
+
+                    $salesOrder = SalesOrder::create([
+                        'order_number' => $orderNumber,
+                        'customer_id' => $validated['customer_id'],
+                        'order_date' => now()->toDateString(),
+                        'delivery_date' => $validated['delivery_date'],
+                        'due_date' => $validated['delivery_date'],
+                        'status' => 'Pending',
+                        'total_amount' => 0,
+                        'paid_amount' => 0,
+                        'payment_status' => 'Pending',
+                        'note' => $validated['note'] ?? null,
+                        'user_id' => auth()->id(),
+                    ]);
+
+                    break;
+                } catch (\Illuminate\Database\QueryException $e) {
+                    if ($e->getCode() == '23000' || str_contains($e->getMessage(), 'Duplicate entry')) {
+                        $retryCount++;
+                        if ($retryCount >= $maxRetries) {
+                            throw $e;
+                        }
+                        usleep(100000);
+                        continue;
+                    }
+                    throw $e;
+                }
+            }
+
+            $totalAmount = 0;
+            if ($salesOrder && !empty($validated['items'])) {
+                $productIds = array_column($validated['items'], 'product_id');
+                $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
+
+                foreach ($validated['items'] as $item) {
+                    $product = $products->get($item['product_id']);
+                    if (!$product) { continue; }
+                    $unitPrice = (float) $product->selling_price;
+                    $quantity = (int) $item['quantity'];
+                    $lineTotal = $unitPrice * $quantity;
+
+                    SalesOrderItem::create([
+                        'sales_order_id' => $salesOrder->id,
+                        'product_id' => $product->id,
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                        'total_price' => $lineTotal,
+                    ]);
+                    $totalAmount += $lineTotal;
+                }
+            }
+
+            if ($salesOrder) {
+                $salesOrder->update(['total_amount' => $totalAmount]);
+                \App\Models\SystemActivity::log('Sales', 'Order Created', "New Sales Order {$salesOrder->order_number} created for {$salesOrder->customer->name}.", 'indigo');
+            }
+
+            DB::commit();
+
+            if ($request->wantsJson()) {
+                $salesOrder->load(['customer', 'items.product']);
+
+                $customerTypeBg = [
+                    'Wholesale' => '#64B5F6',
+                    'Retail' => '#6366F1',
+                    'Contractor' => '#BA68C8',
+                ];
+                $statusBg = [
+                    'In production' => '#FFB74D',
+                    'Pending' => '#64B5F6',
+                    'Delivered' => '#81C784',
+                    'Ready' => '#BA68C8',
+                ];
+                $paymentBg = [
+                    'Pending' => '#ffffff',
+                    'Partial' => '#FFB74D',
+                    'Paid' => '#81C784',
+                ];
+
+                $viewData = [
+                    'order' => $salesOrder,
+                    'customerTypeBg' => $customerTypeBg,
+                    'statusBg' => $statusBg,
+                    'paymentBg' => $paymentBg,
+                ];
+
+                $html = view('partials.sales-order-row', $viewData)->render();
+                $modalHtml = view('partials.sales-order-modals', $viewData)->render();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Sales order created.',
+                    'html' => $html,
+                    'modalHtml' => $modalHtml,
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Sales order created.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Sales order creation failed', [
+                'exception' => $e->getMessage(),
+            ]);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error_code' => 'ORDER_CREATION_FAILED',
+                    'message' => 'Failed to create sales order: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Failed to create the sales order. Please try again.');
+        }
     }
 
     public function cancelItem(Request $request, SalesOrderItem $item)
@@ -192,73 +217,118 @@ class SalesOrderController extends Controller
 
     public function update(Request $request, SalesOrder $sales_order)
     {
-        $validated = $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'delivery_date' => 'required|date|after_or_equal:today',
-            'status' => 'nullable|in:In production,Pending,Delivered,Ready,Cancelled',
-
-            'payment_status' => 'nullable|in:Pending,Partial,Paid',
-            'note' => 'nullable|string',
-        ]);
-
-        // Restrict manual status edit if already Ready or Delivered
-        $newStatus = $validated['status'] ?? $sales_order->status;
-        if (in_array($sales_order->status, ['Ready', 'Delivered'])) {
-            $newStatus = $sales_order->status;
-        }
-
-        $sales_order->update([
-            'customer_id' => $validated['customer_id'],
-            'delivery_date' => $validated['delivery_date'],
-            'due_date' => $validated['delivery_date'],
-            'status' => $newStatus,
-            'payment_status' => $validated['payment_status'] ?? $sales_order->payment_status,
-            'note' => $validated['note'] ?? null,
-            'user_id' => auth()->id(),
-        ]);
-
-        \App\Models\SystemActivity::log('Sales', 'Order Updated', "Sales Order {$sales_order->order_number} details updated status: {$newStatus}.", 'indigo');
-
-        if ($request->wantsJson()) {
-            $sales_order->load(['customer', 'items.product']);
-
-            $customerTypeBg = [
-                'Wholesale' => '#64B5F6',
-                'Retail' => '#6366F1',
-                'Contractor' => '#BA68C8',
-            ];
-            $statusBg = [
-                'In production' => '#FFB74D',
-                'Pending' => '#64B5F6',
-                'Delivered' => '#81C784',
-                'Ready' => '#BA68C8',
-            ];
-            $paymentBg = [
-                'Pending' => '#ffffff',
-                'Partial' => '#FFB74D',
-                'Paid' => '#81C784',
-            ];
-
-            $viewData = [
-                'order' => $sales_order,
-                'customerTypeBg' => $customerTypeBg,
-                'statusBg' => $statusBg,
-                'paymentBg' => $paymentBg,
-            ];
-
-            $html = view('partials.sales-order-row', $viewData)->render();
-            $modalHtml = view('partials.sales-order-modals', $viewData)->render();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Sales order updated successfully.',
-                'html' => $html,
-                'modalHtml' => $modalHtml,
-                'orderId' => $sales_order->id,
+        try {
+            $validated = $request->validate([
+                'customer_id' => 'required|exists:customers,id',
+                'delivery_date' => 'required|date|after_or_equal:today',
+                'status' => 'nullable|in:In production,Pending,Delivered,Ready,Cancelled',
+                'payment_status' => 'nullable|in:Pending,Partial,Paid',
+                'note' => 'nullable|string',
             ]);
+        } catch (ValidationException $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error_code' => 'VALIDATION_FAILED',
+                    'message' => 'The given data was invalid.',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            throw $e;
         }
 
-        return redirect()->back()->with('success', 'Sales order updated.');
+        $requestedStatus = $validated['status'] ?? $sales_order->status;
+        if (in_array($sales_order->status, ['Ready', 'Delivered']) && $requestedStatus !== $sales_order->status) {
+            $message = "Order status is locked as '{$sales_order->status}' and cannot be changed manually.";
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error_code' => 'STATUS_LOCKED',
+                    'message' => $message,
+                    'current_status' => $sales_order->status,
+                ], 409);
+            }
+            return redirect()->back()->with('error', $message);
+        }
+
+        $newStatus = in_array($sales_order->status, ['Ready', 'Delivered'])
+            ? $sales_order->status
+            : $requestedStatus;
+
+        DB::beginTransaction();
+        try {
+            $sales_order->update([
+                'customer_id' => $validated['customer_id'],
+                'delivery_date' => $validated['delivery_date'],
+                'due_date' => $validated['delivery_date'],
+                'status' => $newStatus,
+                'payment_status' => $validated['payment_status'] ?? $sales_order->payment_status,
+                'note' => $validated['note'] ?? null,
+                'user_id' => auth()->id(),
+            ]);
+
+            \App\Models\SystemActivity::log('Sales', 'Order Updated', "Sales Order {$sales_order->order_number} details updated status: {$newStatus}.", 'indigo');
+
+            DB::commit();
+
+            if ($request->wantsJson()) {
+                $sales_order->load(['customer', 'items.product']);
+
+                $customerTypeBg = [
+                    'Wholesale' => '#64B5F6',
+                    'Retail' => '#6366F1',
+                    'Contractor' => '#BA68C8',
+                ];
+                $statusBg = [
+                    'In production' => '#FFB74D',
+                    'Pending' => '#64B5F6',
+                    'Delivered' => '#81C784',
+                    'Ready' => '#BA68C8',
+                ];
+                $paymentBg = [
+                    'Pending' => '#ffffff',
+                    'Partial' => '#FFB74D',
+                    'Paid' => '#81C784',
+                ];
+
+                $viewData = [
+                    'order' => $sales_order,
+                    'customerTypeBg' => $customerTypeBg,
+                    'statusBg' => $statusBg,
+                    'paymentBg' => $paymentBg,
+                ];
+
+                $html = view('partials.sales-order-row', $viewData)->render();
+                $modalHtml = view('partials.sales-order-modals', $viewData)->render();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Sales order updated successfully.',
+                    'html' => $html,
+                    'modalHtml' => $modalHtml,
+                    'orderId' => $sales_order->id,
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Sales order updated.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Sales order update failed', [
+                'sales_order_id' => $sales_order->id,
+                'exception' => $e->getMessage(),
+            ]);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error_code' => 'ORDER_UPDATE_FAILED',
+                    'message' => 'Failed to update sales order: ' . $e->getMessage(),
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Failed to update the sales order. Please try again.');
+        }
     }
 
 public function RemoveCustomer($id)
@@ -350,8 +420,7 @@ public function RemoveCustomer($id)
 
         $callback = function() use ($salesOrders) {
             $file = fopen('php://output', 'w');
-            
-            // CSV Headers
+
             fputcsv($file, [
                 'Order Number',
                 'Customer',
@@ -364,7 +433,6 @@ public function RemoveCustomer($id)
                 'Paid Amount',
             ]);
 
-            // CSV Data
             foreach ($salesOrders as $order) {
                 fputcsv($file, [
                     $order->order_number,
