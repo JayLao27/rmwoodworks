@@ -44,7 +44,7 @@
 					<button id="exportButtonAccounting" class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-4 py-2 rounded-lg text-sm text-white transition">
 						<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-						</svg>
+						</svg>	
 						<span>Export</span>
 						<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
 							<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -53,22 +53,6 @@
 					<!-- Export Dropdown -->
 					<div id="exportDropdownAccounting" class="hidden absolute top-full right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
 						<div class="py-1">
-							<a href="#" onclick="exportTransactionReceipt(event)" class="block px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition">
-								<div class="flex items-center gap-1.5">
-									<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-									</svg>
-									<span>Transaction Receipt</span>
-								</div>
-							</a>
-							<a href="#" onclick="exportFinancialReport(event)" class="block px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition">
-								<div class="flex items-center gap-1.5">
-									<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-									</svg>
-									<span>Financial Report</span>
-								</div>
-							</a>
 							<a href="#" onclick="exportTransactionHistory(event)" class="block px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 transition">
 								<div class="flex items-center gap-1.5">
 									<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
