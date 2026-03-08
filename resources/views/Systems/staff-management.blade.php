@@ -1,7 +1,7 @@
 @extends('layouts.system')
 
 @section('main-content')
-<div class="flex-1 flex flex-col overflow-hidden bg-amber-50/50">
+<div class="flex-1 flex flex-col overflow-hidden bg-amber-50">
     <!-- Header Section -->
     <div class="p-8 bg-amber-50 border-b border-amber-200 relative z-10 shadow-sm">
         <div class="max-w-7xl mx-auto">
@@ -51,27 +51,27 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 @foreach($roles as $roleKey => $roleLabel)
                     @php $count = $staffs->where('role', $roleKey)->count(); @endphp
-                    <div class="bg-white rounded-xl border border-amber-100 p-4 shadow-sm text-center">
-                        <div class="text-2xl font-extrabold text-slate-800">{{ $count }}</div>
-                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1 leading-tight">{{ $roleLabel }}</div>
+                    <div class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl border border-slate-600 p-4 shadow-xl text-center">
+                        <div class="text-2xl font-extrabold text-white">{{ $count }}</div>
+                        <div class="text-[10px] font-bold text-slate-300 uppercase tracking-wider mt-1 leading-tight">{{ $roleLabel }}</div>
                     </div>
                 @endforeach
             </div>
 
             <!-- Admin Account Card -->
-            <div class="bg-white rounded-2xl border border-amber-100 shadow-sm p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600 shadow-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white font-extrabold text-sm shadow-md">
+                    <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center text-white font-extrabold text-sm shadow-md">
                         {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                     </div>
                     <div>
-                        <p class="font-extrabold text-gray-800 text-sm">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-gray-500 mt-0.5">{{ auth()->user()->email }}</p>
-                        <span class="mt-1 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-white">Administrator</span>
+                        <p class="font-extrabold text-white text-sm">{{ auth()->user()->name }}</p>
+                        <p class="text-xs text-slate-300 mt-0.5">{{ auth()->user()->email }}</p>
+                        <span class="mt-1 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">Administrator</span>
                     </div>
                 </div>
                 <button onclick="openAdminPasswordModal()"
-                    class="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-xl text-xs font-bold transition-all">
+                    class="flex items-center gap-2 px-4 py-2 bg-white/10 text-white hover:bg-white/20 rounded-xl text-xs font-bold transition-all backdrop-blur-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                     </svg>
@@ -80,46 +80,46 @@
             </div>
 
             <!-- Staff Table -->
-            <div class="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-amber-100 flex items-center justify-between">
-                    <h2 class="text-sm font-bold text-gray-800 uppercase tracking-widest">All Staff Accounts</h2>
-                    <span class="text-xs text-gray-500 font-medium">{{ $staffs->count() }} total</span>
+            <div class="bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl border border-slate-600 shadow-xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-600 flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-white uppercase tracking-widest">All Staff Accounts</h2>
+                    <span class="text-xs text-slate-300 font-medium">{{ $staffs->count() }} total</span>
                 </div>
 
                 @if($staffs->isEmpty())
                     <div class="flex flex-col items-center justify-center py-20 text-center">
-                        <svg class="w-14 h-14 text-amber-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-14 h-14 text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
-                        <p class="text-gray-500 font-medium text-sm">No staff accounts yet.</p>
-                        <p class="text-gray-400 text-xs mt-1">Click "Add Staff" to create the first account.</p>
+                        <p class="text-slate-300 font-medium text-sm">No staff accounts yet.</p>
+                        <p class="text-slate-400 text-xs mt-1">Click "Add Staff" to create the first account.</p>
                     </div>
                 @else
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
-                            <thead class="bg-amber-50/60">
+                            <thead class="bg-slate-900/40">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">#</th>
-                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">Name</th>
-                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">Email</th>
-                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">Role</th>
-                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider">Created</th>
-                                    <th class="px-6 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-300 uppercase tracking-wider">#</th>
+                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-300 uppercase tracking-wider">Name</th>
+                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-300 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-300 uppercase tracking-wider">Role</th>
+                                    <th class="px-6 py-3 text-left text-[11px] font-bold text-slate-300 uppercase tracking-wider">Created</th>
+                                    <th class="px-6 py-3 text-right text-[11px] font-bold text-slate-300 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-amber-50">
+                            <tbody class="divide-y divide-slate-600">
                                 @foreach($staffs as $index => $staff)
-                                <tr class="hover:bg-amber-50/40 transition-colors">
-                                    <td class="px-6 py-4 text-gray-400 font-medium text-xs">{{ $index + 1 }}</td>
+                                <tr class="hover:bg-white/5 transition-colors">
+                                    <td class="px-6 py-4 text-slate-400 font-medium text-xs">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                                                 {{ strtoupper(substr($staff->name, 0, 2)) }}
                                             </div>
-                                            <span class="font-semibold text-gray-800">{{ $staff->name }}</span>
+                                            <span class="font-semibold text-white">{{ $staff->name }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 text-gray-600">{{ $staff->email }}</td>
+                                    <td class="px-6 py-4 text-slate-300">{{ $staff->email }}</td>
                                     <td class="px-6 py-4">
                                         @php
                                             $roleColors = [
@@ -134,23 +134,23 @@
                                             {{ ucwords(str_replace('_', ' ', $staff->role)) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-gray-500 text-xs">{{ $staff->created_at->format('M d, Y') }}</td>
+                                    <td class="px-6 py-4 text-slate-400 text-xs">{{ $staff->created_at->format('M d, Y') }}</td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center justify-end gap-2">
                                             <button onclick="openEditModal({{ $staff->id }}, '{{ addslashes($staff->name) }}', '{{ $staff->email }}', '{{ $staff->role }}')"
-                                                class="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-all" title="Edit">
+                                                class="p-2 bg-white/10 text-slate-300 rounded-lg hover:bg-white/20 transition-all" title="Edit">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                 </svg>
                                             </button>
                                             <button onclick="openResetModal({{ $staff->id }}, '{{ addslashes($staff->name) }}')"
-                                                class="p-2 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition-all" title="Reset Password">
+                                                class="p-2 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-all" title="Reset Password">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
                                                 </svg>
                                             </button>
                                             <button onclick="openDeleteModal({{ $staff->id }}, '{{ addslashes($staff->name) }}')"
-                                                class="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all" title="Delete">
+                                                class="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all" title="Delete">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
