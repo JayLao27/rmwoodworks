@@ -16,23 +16,26 @@ class SalesOrderController extends Controller
 {
     public function index()
     {
-        $salesOrders = SalesOrder::with(['customer', 'items.product'])
-            ->whereNotIn('status', ['Cancelled', 'Delivered'])
-            ->orderByRaw("CASE WHEN status = 'Ready' AND payment_status = 'Paid' THEN 0 ELSE 1 END")
-            ->latest()
-            ->paginate(20);
+        try {
+            $salesOrders = SalesOrder::with(['customer', 'items.product'])
+                ->whereNotIn('status', ['Cancelled', 'Delivered'])
+                ->orderByRaw("CASE WHEN status = 'Ready' AND payment_status = 'Paid' THEN 0 ELSE 1 END")
+                ->latest()
+                ->paginate(20);
 
-        $archiveOrders = SalesOrder::with(['customer', 'items.product'])
-            ->whereIn('status', ['Cancelled', 'Delivered'])
-            ->latest()
-            ->get();
+            $archiveOrders = SalesOrder::with(['customer', 'items.product'])
+                ->whereIn('status', ['Cancelled', 'Delivered'])
+                ->latest()
+                ->get();
 
+            $customers = CacheService::getCustomers();
+            $products = CacheService::getProducts();
 
-        $customers = CacheService::getCustomers();
-        $products = CacheService::getProducts();
-
-        return view('Systems.sales', compact('salesOrders', 'archiveOrders', 'customers', 'products'));
-
+            return view('Systems.sales', compact('salesOrders', 'archiveOrders', 'customers', 'products'));
+        } catch (\Exception $e) {
+            Log::error('Failed to load sales orders', ['exception' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to load sales orders. Please try again.');
+        }
     }
 
     public function store(Request $request)
@@ -186,32 +189,64 @@ class SalesOrderController extends Controller
 
     public function cancelItem(Request $request, SalesOrderItem $item)
     {
-        $request->validate([
-            'cancel_quantity' => 'required|integer|min:1|max:' . ($item->quantity - $item->cancelled_quantity),
-            'reason' => 'nullable|string'
-        ]);
+        try {
+            $request->validate([
+                'cancel_quantity' => 'required|integer|min:1|max:' . ($item->quantity - $item->cancelled_quantity),
+                'reason' => 'nullable|string'
+            ]);
 
-        $item->increment('cancelled_quantity', $request->cancel_quantity);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Item quantity cancelled successfully.'
-        ]);
+            $item->increment('cancelled_quantity', $request->cancel_quantity);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Item quantity cancelled successfully.'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error_code' => 'VALIDATION_FAILED',
+                'message' => 'The given data was invalid.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Failed to cancel sales order item', ['item_id' => $item->id, 'exception' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'error_code' => 'CANCEL_ITEM_FAILED',
+                'message' => 'Failed to cancel item: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function cancelPurchaseItem(Request $request, PurchaseOrderItem $item)
     {
-        $request->validate([
-            'cancel_quantity' => 'required|numeric|min:0.01|max:' . ($item->quantity - $item->cancelled_quantity),
-            'reason' => 'nullable|string'
-        ]);
+        try {
+            $request->validate([
+                'cancel_quantity' => 'required|numeric|min:0.01|max:' . ($item->quantity - $item->cancelled_quantity),
+                'reason' => 'nullable|string'
+            ]);
 
-        $item->increment('cancelled_quantity', $request->cancel_quantity);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Purchase item quantity cancelled successfully.'
-        ]);
+            $item->increment('cancelled_quantity', $request->cancel_quantity);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Purchase item quantity cancelled successfully.'
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error_code' => 'VALIDATION_FAILED',
+                'message' => 'The given data was invalid.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Failed to cancel purchase order item', ['item_id' => $item->id, 'exception' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'error_code' => 'CANCEL_PURCHASE_ITEM_FAILED',
+                'message' => 'Failed to cancel purchase item: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
 
@@ -333,39 +368,58 @@ class SalesOrderController extends Controller
 
 public function RemoveCustomer($id)
     {
-        $Customer = Customer::findOrFail($id);
-        $customerName = $Customer->name;
-        $Customer->delete();
+        try {
+            $Customer = Customer::findOrFail($id);
+            $customerName = $Customer->name;
+            $Customer->delete();
 
-        \App\Models\SystemActivity::log('Sales', 'Customer Deleted', "Customer '{$customerName}' removed from the system.", 'red');
+            \App\Models\SystemActivity::log('Sales', 'Customer Deleted', "Customer '{$customerName}' removed from the system.", 'red');
 
-        return redirect()->route('sales')->with('success', 'Customer deleted successfully!');
+            return redirect()->route('sales')->with('success', 'Customer deleted successfully!');
+        } catch (\Exception $e) {
+            Log::error('Failed to remove customer', ['customer_id' => $id, 'exception' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to delete customer. Please try again.');
+        }
     }
 
     public function destroy(SalesOrder $sales_order)
     {
-        $sales_order->update(['status' => 'Cancelled']);
-        \App\Models\SystemActivity::log('Sales', 'Order Cancelled', "Sales Order {$sales_order->order_number} was cancelled.", 'red');
-        return redirect()->back()->with('success', 'Order has been moved to Archive.');
+        try {
+            $sales_order->update(['status' => 'Cancelled']);
+            \App\Models\SystemActivity::log('Sales', 'Order Cancelled', "Sales Order {$sales_order->order_number} was cancelled.", 'red');
+            return redirect()->back()->with('success', 'Order has been moved to Archive.');
+        } catch (\Exception $e) {
+            Log::error('Failed to cancel sales order', ['sales_order_id' => $sales_order->id, 'exception' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to cancel the order. Please try again.');
+        }
     }
 
     public function deliver(SalesOrder $sales_order)
     {
-        if ($sales_order->status !== 'Ready' || $sales_order->payment_status !== 'Paid') {
+        try {
+            if ($sales_order->status !== 'Ready' || $sales_order->payment_status !== 'Paid') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only fully paid orders in "Ready" status can be delivered.'
+                ], 400);
+            }
+
+            $sales_order->update(['status' => 'Delivered']);
+
+            \App\Models\SystemActivity::log('Sales', 'Order Delivered', "Sales Order {$sales_order->order_number} has been delivered.", 'emerald');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order #' . $sales_order->order_number . ' has been marked as Delivered.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to deliver sales order', ['sales_order_id' => $sales_order->id, 'exception' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
-                'message' => 'Only fully paid orders in "Ready" status can be delivered.'
-            ], 400);
+                'error_code' => 'DELIVER_ORDER_FAILED',
+                'message' => 'Failed to mark order as delivered: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $sales_order->update(['status' => 'Delivered']);
-
-        \App\Models\SystemActivity::log('Sales', 'Order Delivered', "Sales Order {$sales_order->order_number} has been delivered.", 'emerald');
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Order #' . $sales_order->order_number . ' has been marked as Delivered.'
-        ]);
     }
 
 
@@ -398,58 +452,68 @@ public function RemoveCustomer($id)
 
     public function exportReceipt($orderNumber)
     {
-        $salesOrder = SalesOrder::with(['customer', 'items.product'])
-            ->where('order_number', $orderNumber)
-            ->firstOrFail();
+        try {
+            $salesOrder = SalesOrder::with(['customer', 'items.product'])
+                ->where('order_number', $orderNumber)
+                ->firstOrFail();
 
-        return view('exports.sales-receipt', compact('salesOrder'));
+            return view('exports.sales-receipt', compact('salesOrder'));
+        } catch (\Exception $e) {
+            Log::error('Failed to export sales receipt', ['order_number' => $orderNumber, 'exception' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to export receipt. Please try again.');
+        }
     }
 
     public function exportSalesReport()
     {
-        $salesOrders = SalesOrder::with(['customer', 'items.product'])
-            ->latest()
-            ->get();
+        try {
+            $salesOrders = SalesOrder::with(['customer', 'items.product'])
+                ->latest()
+                ->get();
 
-        $filename = 'sales-report-' . now()->format('Y-m-d') . '.csv';
-        
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-        ];
+            $filename = 'sales-report-' . now()->format('Y-m-d') . '.csv';
 
-        $callback = function() use ($salesOrders) {
-            $file = fopen('php://output', 'w');
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
 
-            fputcsv($file, [
-                'Order Number',
-                'Customer',
-                'Customer Type',
-                'Order Date',
-                'Delivery Date',
-                'Status',
-                'Total Amount',
-                'Payment Status',
-                'Paid Amount',
-            ]);
+            $callback = function() use ($salesOrders) {
+                $file = fopen('php://output', 'w');
 
-            foreach ($salesOrders as $order) {
                 fputcsv($file, [
-                    $order->order_number,
-                    $order->customer?->name ?? 'N/A',
-                    $order->customer?->customer_type ?? 'N/A',
-                    $order->order_date,
-                    $order->delivery_date,
-                    $order->status,
-                    number_format($order->total_amount, 2),
-                    $order->payment_status,
-                    number_format($order->paid_amount, 2),
+                    'Order Number',
+                    'Customer',
+                    'Customer Type',
+                    'Order Date',
+                    'Delivery Date',
+                    'Status',
+                    'Total Amount',
+                    'Payment Status',
+                    'Paid Amount',
                 ]);
-            }
 
-            fclose($file);
-        };
+                foreach ($salesOrders as $order) {
+                    fputcsv($file, [
+                        $order->order_number,
+                        $order->customer?->name ?? 'N/A',
+                        $order->customer?->customer_type ?? 'N/A',
+                        $order->order_date,
+                        $order->delivery_date,
+                        $order->status,
+                        number_format($order->total_amount, 2),
+                        $order->payment_status,
+                        number_format($order->paid_amount, 2),
+                    ]);
+                }
 
-        return response()->stream($callback, 200, $headers);
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            Log::error('Failed to export sales report', ['exception' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to export sales report. Please try again.');
+        }
     }
 }
