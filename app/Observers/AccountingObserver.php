@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\Accounting;
+use App\Models\Accounting\Accounting;
 use App\Services\CacheService;
 
 class AccountingObserver
