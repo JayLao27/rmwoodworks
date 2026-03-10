@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Customer;
-use App\Models\Product;
-use App\Models\Supplier;
-use App\Models\Material;
-use App\Models\Accounting;
+use App\Models\Sales\Customer;
+use App\Models\Inventory\Product;
+use App\Models\Procurement\Supplier;
+use App\Models\Inventory\Material;
+use App\Models\Accounting\Accounting;
 use Illuminate\Support\Facades\Cache;
 
 class CacheService
