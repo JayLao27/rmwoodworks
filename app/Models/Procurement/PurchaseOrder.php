@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Procurement;
 
+use App\Models\Accounting\Accounting;
+use App\Models\System\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
