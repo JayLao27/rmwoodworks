@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Supplier;
+use App\Models\Procurement\Supplier;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
