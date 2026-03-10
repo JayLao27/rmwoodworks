@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\Customer;
-use App\Models\Product;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderItem;
-use App\Models\PurchaseOrderItem;
+use App\Models\Sales\Customer;
+use App\Models\Inventory\Product;
+use App\Models\Sales\SalesOrder;
+use App\Models\Sales\SalesOrderItem;
+use App\Models\Procurement\PurchaseOrderItem;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -127,7 +127,7 @@ class SalesOrderController extends Controller
 
             if ($salesOrder) {
                 $salesOrder->update(['total_amount' => $totalAmount]);
-                \App\Models\SystemActivity::log('Sales', 'Order Created', "New Sales Order {$salesOrder->order_number} created for {$salesOrder->customer->name}.", 'indigo');
+                \App\Models\System\SystemActivity::log('Sales', 'Order Created', "New Sales Order {$salesOrder->order_number} created for {$salesOrder->customer->name}.", 'indigo');
             }
 
             DB::commit();
@@ -305,7 +305,7 @@ class SalesOrderController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            \App\Models\SystemActivity::log('Sales', 'Order Updated', "Sales Order {$sales_order->order_number} details updated status: {$newStatus}.", 'indigo');
+            \App\Models\System\SystemActivity::log('Sales', 'Order Updated', "Sales Order {$sales_order->order_number} details updated status: {$newStatus}.", 'indigo');
 
             DB::commit();
 
@@ -376,7 +376,7 @@ public function RemoveCustomer($id)
             $customerName = $Customer->name;
             $Customer->delete();
 
-            \App\Models\SystemActivity::log('Sales', 'Customer Deleted', "Customer '{$customerName}' removed from the system.", 'red');
+            \App\Models\System\SystemActivity::log('Sales', 'Customer Deleted', "Customer '{$customerName}' removed from the system.", 'red');
 
             return redirect()->route('sales')->with('success', 'Customer deleted successfully!');
         } catch (\Exception $e) {
@@ -389,7 +389,7 @@ public function RemoveCustomer($id)
     {
         try {
             $sales_order->update(['status' => 'Cancelled']);
-            \App\Models\SystemActivity::log('Sales', 'Order Cancelled', "Sales Order {$sales_order->order_number} was cancelled.", 'red');
+            \App\Models\System\SystemActivity::log('Sales', 'Order Cancelled', "Sales Order {$sales_order->order_number} was cancelled.", 'red');
             return redirect()->back()->with('success', 'Order has been moved to Archive.');
         } catch (\Exception $e) {
             Log::error('Failed to cancel sales order', ['sales_order_id' => $sales_order->id, 'exception' => $e->getMessage()]);
@@ -409,7 +409,7 @@ public function RemoveCustomer($id)
 
             $sales_order->update(['status' => 'Delivered']);
 
-            \App\Models\SystemActivity::log('Sales', 'Order Delivered', "Sales Order {$sales_order->order_number} has been delivered.", 'emerald');
+            \App\Models\System\SystemActivity::log('Sales', 'Order Delivered', "Sales Order {$sales_order->order_number} has been delivered.", 'emerald');
 
             return response()->json([
                 'success' => true,
