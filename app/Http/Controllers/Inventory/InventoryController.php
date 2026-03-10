@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\Product;
-use App\Models\Material;
-use App\Models\Supplier;
-use App\Models\PurchaseOrder;
-use App\Models\WorkOrder;
-use App\Models\InventoryMovement;
+use App\Models\Inventory\Product;
+use App\Models\Inventory\Material;
+use App\Models\Procurement\Supplier;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Production\WorkOrder;
+use App\Models\Inventory\InventoryMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
