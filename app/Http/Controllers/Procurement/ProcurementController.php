@@ -7,11 +7,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\Supplier;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
-use App\Models\Material;
-use App\Models\InventoryMovement;
+use App\Models\Procurement\Supplier;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Procurement\PurchaseOrderItem;
+use App\Models\Inventory\Material;
+use App\Models\Inventory\InventoryMovement;
 
 class ProcurementController extends Controller
 {
