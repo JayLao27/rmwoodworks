@@ -4,11 +4,11 @@ namespace App\Http\Controllers\System;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\Accounting;
-use App\Models\InventoryMovement;
-use App\Models\PurchaseOrder;
-use App\Models\SalesOrder;
-use App\Models\WorkOrder;
+use App\Models\Accounting\Accounting;
+use App\Models\Inventory\InventoryMovement;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Sales\SalesOrder;
+use App\Models\Production\WorkOrder;
 use Illuminate\Http\Request;
 
 class AuditTrailController extends Controller
@@ -127,7 +127,7 @@ class AuditTrailController extends Controller
                 ];
             });
 
-        $systemActivities = $filterDates(\App\Models\SystemActivity::with(['user'])->latest())
+        $systemActivities = $filterDates(\App\Models\System\SystemActivity::with(['user'])->latest())
             ->limit($limit)
             ->get()
             ->map(function ($item) {
@@ -150,7 +150,7 @@ class AuditTrailController extends Controller
             ->concat($systemActivities)
             ->sortByDesc('date');
 
-        $availableRoles = \App\Models\User::where('role', '!=', 'admin')
+        $availableRoles = \App\Models\System\User::where('role', '!=', 'admin')
             ->distinct()
             ->pluck('role')
             ->toArray();
