@@ -1,14 +1,14 @@
 <?php
 
-use App\Http\Controllers\AccountingController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\SalesOrderController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\ProcurementController;
-use App\Http\Controllers\ProductionController;
-use App\Http\Controllers\AuditTrailController;
-use App\Http\Controllers\StaffController;
+use App\Http\Controllers\Accounting\AccountingController;
+use App\Http\Controllers\Sales\CustomerController;
+use App\Http\Controllers\Sales\SalesOrderController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Inventory\InventoryController;
+use App\Http\Controllers\Procurement\ProcurementController;
+use App\Http\Controllers\Production\ProductionController;
+use App\Http\Controllers\System\AuditTrailController;
+use App\Http\Controllers\System\StaffController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/procurement/purchase-orders/{purchaseOrder}/items', [ProcurementController::class, 'getPurchaseOrderItems'])
         ->name('procurement.purchase-order.items')
         ->middleware('role:admin,procurement_officer,inventory_clerk');
-    Route::post('/procurement/item/{item}/cancel', [App\Http\Controllers\SalesOrderController::class, 'cancelPurchaseItem'])
+    Route::post('/procurement/item/{item}/cancel', [App\Http\Controllers\Sales\SalesOrderController::class, 'cancelPurchaseItem'])
         ->name('procurement.item.cancel')
         ->middleware('role:admin,procurement_officer');
 
