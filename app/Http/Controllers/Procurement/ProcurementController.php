@@ -127,7 +127,7 @@ class ProcurementController extends Controller
 
         $supplier = Supplier::create($request->all());
 
-        \App\Models\SystemActivity::log('Procurement', 'Supplier Added', "New supplier '{$supplier->name}' added to the system.", 'blue');
+        \App\Models\System\SystemActivity::log('Procurement', 'Supplier Added', "New supplier '{$supplier->name}' added to the system.", 'blue');
 
         return redirect()->route('procurement')->with('success', 'Supplier added successfully!');
     }
@@ -175,7 +175,7 @@ class ProcurementController extends Controller
 
         $purchaseOrder->update(['total_amount' => $totalAmount]);
 
-        \App\Models\SystemActivity::log('Procurement', 'PO Created', "Purchase Order {$purchaseOrder->order_number} created for {$purchaseOrder->supplier->name}.", 'indigo');
+        \App\Models\System\SystemActivity::log('Procurement', 'PO Created', "Purchase Order {$purchaseOrder->order_number} created for {$purchaseOrder->supplier->name}.", 'indigo');
 
         return redirect()->route('procurement')->with('success', 'Purchase order created successfully!');
     }
@@ -194,7 +194,7 @@ class ProcurementController extends Controller
         $supplier = Supplier::findOrFail($id);
         $supplier->update($request->all());
 
-        \App\Models\SystemActivity::log('Procurement', 'Supplier Updated', "Supplier '{$supplier->name}' details updated.", 'blue');
+        \App\Models\System\SystemActivity::log('Procurement', 'Supplier Updated', "Supplier '{$supplier->name}' details updated.", 'blue');
 
         return redirect()->route('procurement')->with('success', 'Supplier updated successfully!');
     }
@@ -223,7 +223,7 @@ class ProcurementController extends Controller
 
         Log::info('ProcurementController@updatePurchaseOrder - saved', ['id' => $id, 'status' => $purchaseOrder->status, 'payment_status' => $purchaseOrder->payment_status]);
 
-        \App\Models\SystemActivity::log('Procurement', 'PO Updated', "Purchase Order {$purchaseOrder->order_number} status updated to " . ucfirst($purchaseOrder->status) . ".", 'indigo');
+        \App\Models\System\SystemActivity::log('Procurement', 'PO Updated', "Purchase Order {$purchaseOrder->order_number} status updated to " . ucfirst($purchaseOrder->status) . ".", 'indigo');
 
         return redirect()->route('procurement')->with('success', 'Purchase order updated successfully!');
     }
@@ -470,7 +470,7 @@ class ProcurementController extends Controller
             ], 500);
         }
 
-        \App\Models\SystemActivity::log('Procurement', 'Stock Received', "Items from PO {$purchaseOrder->order_number} received into inventory.", 'emerald');
+        \App\Models\System\SystemActivity::log('Procurement', 'Stock Received', "Items from PO {$purchaseOrder->order_number} received into inventory.", 'emerald');
 
         return response()->json([
             'success' => true,
@@ -614,7 +614,7 @@ class ProcurementController extends Controller
             $purchaseOrder->update(['status' => 'received']);
         });
 
-        \App\Models\SystemActivity::log('Procurement', 'PO Mark Received', "Purchase Order {$purchaseOrder->order_number} bulk marked as completely received.", 'emerald');
+        \App\Models\System\SystemActivity::log('Procurement', 'PO Mark Received', "Purchase Order {$purchaseOrder->order_number} bulk marked as completely received.", 'emerald');
 
         return redirect()->route('procurement')->with('success', 'Stock received and inventory updated successfully.');
     }
