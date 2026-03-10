@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Accounting;
 
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Sales\SalesOrder;
+use App\Models\System\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Accounting extends Model
