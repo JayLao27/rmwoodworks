@@ -4,14 +4,13 @@ namespace App\Http\Controllers\Production;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\Accounting;
-use App\Models\InventoryMovement;
-use App\Models\Material;
-use App\Models\Product;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderItem;
-use App\Models\WorkOrder;
-use App\Services\CacheService;
+use App\Models\Accounting\Accounting;
+use App\Models\Inventory\InventoryMovement;
+use App\Models\Inventory\Material;
+use App\Models\Inventory\Product;
+use App\Models\Sales\SalesOrder;
+use App\Models\Sales\SalesOrderItem;
+use App\Models\Production\WorkOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
