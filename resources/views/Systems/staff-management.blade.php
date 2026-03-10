@@ -435,7 +435,7 @@
 
 <script src="{{ asset('js/staff-management.js') }}?v={{ filemtime(public_path('js/staff-management.js')) }}"></script>
 <script>
-    // Auto-open modal on validation error (requires Blade directives)
+    // Auto-open modal on validation error
     @if($errors->any() && session('_modal') === 'create')
     openCreateModal();
     @endif
