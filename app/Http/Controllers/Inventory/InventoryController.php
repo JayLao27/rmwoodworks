@@ -29,8 +29,8 @@ class InventoryController extends Controller
         $totalValue = $materials->sum(function($material) {
             return $material->current_stock * $material->unit_cost;
         });
-        $newOrders = \App\Models\SalesOrder::where('status', 'Pending')->count();
-        $pendingDeliveries = \App\Models\PurchaseOrder::whereIn('status', ['Pending', 'Partial'])->count();
+        $newOrders = \App\Models\Sales\SalesOrder::where('status', 'Pending')->count();
+        $pendingDeliveries = \App\Models\Procurement\PurchaseOrder::whereIn('status', ['Pending', 'Partial'])->count();
         
         return view('Systems.inventory', compact(
             'products', 'materials', 'suppliers', 
@@ -79,7 +79,7 @@ class InventoryController extends Controller
                 
                 $item->materials()->sync($materials);
             }
-            \App\Models\SystemActivity::log('Inventory', 'Product Created', "New product '{$item->product_name}' added to inventory.", 'indigo');
+            \App\Models\System\SystemActivity::log('Inventory', 'Product Created', "New product '{$item->product_name}' added to inventory.", 'indigo');
         } else {
             $item = Material::create([
                 'name' => $request->name,
@@ -90,7 +90,7 @@ class InventoryController extends Controller
                 'unit_cost' => $request->unit_cost,
                 'supplier_id' => $request->supplier_id
             ]);
-            \App\Models\SystemActivity::log('Inventory', 'Material Created', "New material '{$item->name}' added to inventory.", 'amber');
+            \App\Models\System\SystemActivity::log('Inventory', 'Material Created', "New material '{$item->name}' added to inventory.", 'amber');
         }
 
         // Create initial inventory movement only for materials
@@ -215,7 +215,7 @@ class InventoryController extends Controller
             } else {
                 $item->materials()->detach();
             }
-            \App\Models\SystemActivity::log('Inventory', 'Product Updated', "Product '{$item->product_name}' details updated.", 'indigo');
+            \App\Models\System\SystemActivity::log('Inventory', 'Product Updated', "Product '{$item->product_name}' details updated.", 'indigo');
         } else {
             $item = Material::findOrFail($id);
             $item->update([
@@ -227,7 +227,7 @@ class InventoryController extends Controller
                 'unit_cost' => $request->unit_cost,
                 'supplier_id' => $request->supplier_id
             ]);
-            \App\Models\SystemActivity::log('Inventory', 'Material Updated', "Material '{$item->name}' details updated.", 'amber');
+            \App\Models\System\SystemActivity::log('Inventory', 'Material Updated', "Material '{$item->name}' details updated.", 'amber');
         }
 
         $itemType = $request->type === 'product' ? 'Product' : 'Material';
@@ -264,7 +264,7 @@ class InventoryController extends Controller
             $item = Product::findOrFail($id);
             
             // Check for active sales orders
-            $activeOrdersCount = \App\Models\SalesOrderItem::where('product_id', $id)
+            $activeOrdersCount = \App\Models\Sales\SalesOrderItem::where('product_id', $id)
                 ->whereHas('salesOrder', function($query) {
                     $query->whereNotIn('status', ['Cancelled', 'Delivered']);
                 })
@@ -282,7 +282,7 @@ class InventoryController extends Controller
 
         // Clear cache
         \App\Services\CacheService::clearRelated($type);
-        \App\Models\SystemActivity::log('Inventory', ucfirst($type) . ' Deleted', "{$type} '{$itemData}' removed from system.", 'red');
+        \App\Models\System\SystemActivity::log('Inventory', ucfirst($type) . ' Deleted', "{$type} '{$itemData}' removed from system.", 'red');
 
         $itemType = $type === 'product' ? 'Product' : 'Material';
 
@@ -385,7 +385,7 @@ class InventoryController extends Controller
         });
 
         $itemName = $request->type === 'material' ? $item->name : $item->product_name;
-        \App\Models\SystemActivity::log('Inventory', 'Stock Adjusted', "Manual stock adjustment for '{$itemName}': {$request->quantity} units.", 'orange');
+        \App\Models\System\SystemActivity::log('Inventory', 'Stock Adjusted', "Manual stock adjustment for '{$itemName}': {$request->quantity} units.", 'orange');
 
         if ($request->expectsJson()) {
             $item->refresh();
@@ -417,8 +417,8 @@ class InventoryController extends Controller
         $totalMaterials    = $materials->count();
         $lowStockAlerts    = $materials->filter(fn($m) => $m->current_stock <= $m->minimum_stock)->count();
         $totalValue        = $materials->sum(fn($m) => $m->current_stock * $m->unit_cost);
-        $newOrders         = \App\Models\SalesOrder::where('status', 'Pending')->count();
-        $pendingDeliveries = \App\Models\PurchaseOrder::whereIn('status', ['Pending', 'Partial'])->count();
+        $newOrders         = \App\Models\Sales\SalesOrder::where('status', 'Pending')->count();
+        $pendingDeliveries = \App\Models\Procurement\PurchaseOrder::whereIn('status', ['Pending', 'Partial'])->count();
 
         return compact('totalMaterials', 'lowStockAlerts', 'totalValue', 'newOrders', 'pendingDeliveries');
     }
