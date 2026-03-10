@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
-use App\Models\Material;
-use App\Models\Product;
-use App\Models\PurchaseOrder;
-use App\Models\WorkOrder;
-use App\Models\Accounting;
-use App\Models\Customer;
+use App\Models\Inventory\Material;
+use App\Models\Inventory\Product;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Production\WorkOrder;
+use App\Models\Accounting\Accounting;
+use App\Models\Sales\Customer;
 use App\Observers\AccountingObserver;
 use App\Observers\CustomerObserver;
 use Illuminate\Database\Eloquent\Relations\Relation;
