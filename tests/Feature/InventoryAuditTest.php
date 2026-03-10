@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Material;
-use App\Models\InventoryMovement;
+use App\Models\System\User;
+use App\Models\Inventory\Material;
+use App\Models\Inventory\InventoryMovement;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -50,7 +50,7 @@ class InventoryAuditTest extends TestCase
     public function test_initial_stock_records_user_id()
     {
         $user = User::factory()->create(['role' => 'admin']);
-        $supplier = \App\Models\Supplier::factory()->create();
+        $supplier = \App\Models\Procurement\Supplier::factory()->create();
 
         $response = $this->actingAs($user)
             ->post(route('inventory.store'), [
