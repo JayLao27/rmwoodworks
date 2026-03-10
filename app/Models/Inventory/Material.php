@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Inventory;
 
+use App\Models\Procurement\Supplier;
+use App\Models\Procurement\PurchaseOrderItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
