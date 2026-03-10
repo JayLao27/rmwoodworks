@@ -14,6 +14,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Material extends Model
 {
     use HasFactory;
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\MaterialFactory::new();
+    }
     protected $fillable = [
         'name',
         'category',
