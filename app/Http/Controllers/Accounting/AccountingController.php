@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Accounting;
 
 use App\Http\Controllers\Controller;
-use App\Models\Accounting;
-use App\Models\Customer;
-use App\Models\Material;
-use App\Models\Product;
-use App\Models\PurchaseOrder;
-use App\Models\SalesOrder;
-use App\Models\SalesOrderItem;
-use App\Models\WorkOrder;
+use App\Models\Accounting\Accounting;
+use App\Models\Sales\Customer;
+use App\Models\Inventory\Material;
+use App\Models\Inventory\Product;
+use App\Models\Procurement\PurchaseOrder;
+use App\Models\Sales\SalesOrder;
+use App\Models\Sales\SalesOrderItem;
+use App\Models\Production\WorkOrder;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;    
@@ -366,7 +366,7 @@ class AccountingController extends Controller
             ]);
         }
 
-        \App\Models\SystemActivity::log('Accounting', 'Transaction Logged', "{$request->transaction_type} of ₱" . number_format($request->amount, 2) . " logged for reference {$request->reference}.", $request->transaction_type === 'Income' ? 'emerald' : 'red');
+        \App\Models\System\SystemActivity::log('Accounting', 'Transaction Logged', "{$request->transaction_type} of ₱" . number_format($request->amount, 2) . " logged for reference {$request->reference}.", $request->transaction_type === 'Income' ? 'emerald' : 'red');
 
         return redirect()->route('accounting')->with('success', 'Transaction added successfully!');
     }
