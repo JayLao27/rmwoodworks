@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use App\Models\Customer;
+use App\Models\Sales\Customer;
 use App\Services\CacheService;
 
 class CustomerObserver
