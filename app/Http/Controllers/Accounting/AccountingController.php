@@ -44,9 +44,9 @@ class AccountingController extends Controller
         $lastMonthExpenses = (float)($lastMonthData->where('transaction_type', 'Expense')->first()->total ?? 0);
         $lastMonthNetProfit = $lastMonthRevenue - $lastMonthExpenses;
 
-        $lastMonthRevenuePercentage = $this->lastMonthRevenue($totalRevenue);
-        $lastMonthNetProfitPercentage = $this->lastMonthNetprofit($netProfit);
-        $lastMonthExpensesPercentage = $this->lastMonthTotalExpenses($totalExpenses);
+        $lastMonthRevenuePercentage = $this->calculateLastMonthRevenuePercentage($totalRevenue);
+        $lastMonthNetProfitPercentage = $this->calculateLastMonthNetProfitPercentage($netProfit);
+        $lastMonthExpensesPercentage = $this->calculateLastMonthExpensesPercentage($totalExpenses);
 
         // Calculate current month data
         $startOfCurrentMonth = $now->copy()->startOfMonth();
@@ -214,8 +214,8 @@ class AccountingController extends Controller
         $chartExpenses = [];
         $chartProfit = [];
         
-        for ($i = 5; $i >= 0; $i--) {
-            $month = $now->copy()->subMonths($i);
+        for ($monthOffset = 5; $monthOffset >= 0; $monthOffset--) {
+            $month = $now->copy()->subMonths($monthOffset);
             $start = $month->copy()->startOfMonth();
             $end = $month->copy()->endOfMonth();
             
@@ -265,7 +265,7 @@ class AccountingController extends Controller
         ));
     }
 
-    public function addTransaction( SalesOrder $salesOrder, PurchaseOrder $purchaseOrder )
+    public function addTransaction()
     {
             
 
@@ -373,7 +373,7 @@ class AccountingController extends Controller
 
     
 
-    public function lastMonthNetprofit($totalNetProfit) 
+    public function calculateLastMonthNetProfitPercentage($totalNetProfit)
     {
         // Get last month's revenue
         $lastMonthStart = now()->subMonth()->startOfMonth();
@@ -397,7 +397,7 @@ class AccountingController extends Controller
         return round($netProfitPercentage, 2);
     }
 
-    public function lastMonthTotalExpenses($totalExpenses)
+    public function calculateLastMonthExpensesPercentage($totalExpenses)
     {
         // Get last month's expenses
         $lastMonthStart = now()->subMonth()->startOfMonth();
@@ -412,7 +412,7 @@ class AccountingController extends Controller
         
         return round($expensesPercentage, 2);
     }
-    Public function lastMonthRevenue( $totalRevenue )
+    public function calculateLastMonthRevenuePercentage( $totalRevenue )
      {
             // Get last month's revenue 
             $lastMonthStart = now()->subMonth()->startOfMonth();

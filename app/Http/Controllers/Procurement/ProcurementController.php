@@ -503,12 +503,12 @@ class ProcurementController extends Controller
                 
                 // Find matching POs (by number or supplier)
                 $purchaseOrderIds = PurchaseOrder::where('order_number', 'like', "%{$search}%")
-                    ->orWhereHas('supplier', function($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
+                    ->orWhereHas('supplier', function($supplierQuery) use ($search) {
+                        $supplierQuery->where('name', 'like', "%{$search}%");
                     })->pluck('id');
 
-                $query->where(function($q) use ($search, $materialIds, $purchaseOrderIds) {
-                    $q->whereIn('item_id', $materialIds)
+                $query->where(function($searchQuery) use ($search, $materialIds, $purchaseOrderIds) {
+                    $searchQuery->whereIn('item_id', $materialIds)
                       ->orWhereIn('reference_id', $purchaseOrderIds)
                       ->orWhere('notes', 'like', "%{$search}%");
                 });

@@ -369,12 +369,12 @@ class SalesOrderController extends Controller
         }
     }
 
-public function RemoveCustomer($id)
+public function removeCustomer($id)
     {
         try {
-            $Customer = Customer::findOrFail($id);
-            $customerName = $Customer->name;
-            $Customer->delete();
+            $customer = Customer::findOrFail($id);
+            $customerName = $customer->name;
+            $customer->delete();
 
             \App\Models\System\SystemActivity::log('Sales', 'Customer Deleted', "Customer '{$customerName}' removed from the system.", 'red');
 

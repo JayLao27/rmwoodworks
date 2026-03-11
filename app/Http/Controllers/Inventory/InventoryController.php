@@ -72,9 +72,9 @@ class InventoryController extends Controller
             // Sync materials to product if provided
             if ($request->has('materials') && is_array($request->materials)) {
                 $materials = collect($request->materials)
-                    ->filter(fn($m) => !empty($m['material_id']))
+                    ->filter(fn($materialInput) => !empty($materialInput['material_id']))
                     ->groupBy('material_id')
-                    ->map(fn($group) => ['quantity_needed' => $group->sum('quantity_needed')])
+                    ->map(fn($materialGroup) => ['quantity_needed' => $materialGroup->sum('quantity_needed')])
                     ->toArray();
                 
                 $item->materials()->sync($materials);
@@ -206,9 +206,9 @@ class InventoryController extends Controller
             // Sync materials
             if ($request->has('materials') && is_array($request->materials)) {
                 $materials = collect($request->materials)
-                    ->filter(fn($m) => !empty($m['material_id']))
+                    ->filter(fn($materialInput) => !empty($materialInput['material_id']))
                     ->groupBy('material_id')
-                    ->map(fn($group) => ['quantity_needed' => $group->sum('quantity_needed')])
+                    ->map(fn($materialGroup) => ['quantity_needed' => $materialGroup->sum('quantity_needed')])
                     ->toArray();
                 
                 $item->materials()->sync($materials);
@@ -415,8 +415,8 @@ class InventoryController extends Controller
     {
         $materials         = Material::all();
         $totalMaterials    = $materials->count();
-        $lowStockAlerts    = $materials->filter(fn($m) => $m->current_stock <= $m->minimum_stock)->count();
-        $totalValue        = $materials->sum(fn($m) => $m->current_stock * $m->unit_cost);
+        $lowStockAlerts    = $materials->filter(fn($material) => $material->current_stock <= $material->minimum_stock)->count();
+        $totalValue        = $materials->sum(fn($material) => $material->current_stock * $material->unit_cost);
         $newOrders         = \App\Models\Sales\SalesOrder::where('status', 'Pending')->count();
         $pendingDeliveries = \App\Models\Procurement\PurchaseOrder::whereIn('status', ['Pending', 'Partial'])->count();
 
@@ -460,8 +460,8 @@ class InventoryController extends Controller
             ->keyBy('id');
 
         // WorkOrder movements may be stored as either 'work_order' or WorkOrder::class (App\Models\WorkOrder)
-        $workOrderMovementIds = $movements->filter(function ($m) {
-            return $m->reference_type === 'work_order' || $m->reference_type === WorkOrder::class;
+        $workOrderMovementIds = $movements->filter(function ($inventoryMovement) {
+            return $inventoryMovement->reference_type === 'work_order' || $inventoryMovement->reference_type === WorkOrder::class;
         })->pluck('reference_id')->unique();
 
         $workOrders = WorkOrder::whereIn('id', $workOrderMovementIds)

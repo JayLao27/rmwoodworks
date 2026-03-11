@@ -137,7 +137,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/sales', [SalesOrderController::class, 'index'])
         ->name('sales')
         ->middleware('role:admin,sales_clerk');
-    Route::delete('/sales/customers/{id}', [SalesOrderController::class, 'RemoveCustomer'])
+    Route::delete('/sales/customers/{id}', [SalesOrderController::class, 'removeCustomer'])
         ->name('customers.delete')
         ->middleware('role:admin,sales_clerk');
     Route::get('/sales/receipt/{orderNumber}', [SalesOrderController::class, 'exportReceipt'])
