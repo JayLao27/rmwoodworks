@@ -12,7 +12,7 @@
 			</div>
 			<div class="flex space-x-3">
 				@php
-					$pendingReceiveCount = \App\Models\PurchaseOrder::where('status', '!=', 'received')->where('status', '!=', 'cancelled')->count();
+					$pendingReceiveCount = \App\Models\Procurement\PurchaseOrder::where('status', '!=', 'received')->where('status', '!=', 'cancelled')->count();
 				@endphp
 				<button onclick="openReceiveStockModal()" class="relative px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2 font-medium text-sm">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -966,7 +966,7 @@
                                     </div>
 
                                     @php
-                                        $purchaseOrders = \App\Models\PurchaseOrder::with('supplier')->where('status', '!=', 'received')->where('status', '!=', 'cancelled')->get();
+                                        $purchaseOrders = \App\Models\Procurement\PurchaseOrder::with('supplier')->where('status', '!=', 'received')->where('status', '!=', 'cancelled')->get();
                                     @endphp
 
                                     <!-- PO Cards Grid -->
