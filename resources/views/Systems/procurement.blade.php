@@ -1418,15 +1418,6 @@
         // --- Procurement Multi-Row Material Functions ---
         var procRowIndex = 0;
 
-        function procFormatCurrency(num) {
-            return '₱' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function procToNumber(value) {
-            const n = parseFloat(value);
-            return Number.isFinite(n) ? n : 0;
-        }
-
         function updateProcRowTotal(el) {
             const row = el.closest('.procurement-item-row');
             if (!row) return;
@@ -1439,13 +1430,13 @@
             let unit = 0;
             if (select) {
                 const opt = select.options[select.selectedIndex];
-                unit = procToNumber(opt ? opt.getAttribute('data-price') : null);
+                unit = toNumber(opt ? opt.getAttribute('data-price') : null);
             }
-            const qty = procToNumber(qtyInput?.value || '0');
-            if (unitPriceDisplay) unitPriceDisplay.value = unit ? procFormatCurrency(unit) : '';
+            const qty = toNumber(qtyInput?.value || '0');
+            if (unitPriceDisplay) unitPriceDisplay.value = unit ? formatCurrency(unit) : '';
             if (unitPriceHidden) unitPriceHidden.value = unit ? unit.toFixed(2) : '';
             const total = unit * (qty || 0);
-            if (lineTotalDisplay) lineTotalDisplay.textContent = procFormatCurrency(total);
+            if (lineTotalDisplay) lineTotalDisplay.textContent = formatCurrency(total);
             updateProcGrandTotal();
         }
 
@@ -1457,13 +1448,13 @@
                 let unit = 0;
                 if (select) {
                     const opt = select.options[select.selectedIndex];
-                    unit = procToNumber(opt ? opt.getAttribute('data-price') : null);
+                    unit = toNumber(opt ? opt.getAttribute('data-price') : null);
                 }
-                const qty = procToNumber(qtyInput?.value || '0');
+                const qty = toNumber(qtyInput?.value || '0');
                 grand += unit * (qty || 0);
             });
             const el = document.getElementById('procGrandTotal');
-            if (el) el.textContent = procFormatCurrency(grand);
+            if (el) el.textContent = formatCurrency(grand);
         }
 
         function addProcurementMaterialRow() {
@@ -1583,12 +1574,12 @@
             // Auto-fill pricing
             const unitPriceDisplay = row.querySelector('.proc-item-unit-price');
             const unitPriceHidden = row.querySelector('.proc-item-unit-price-hidden');
-            if (unitPriceDisplay) unitPriceDisplay.value = procFormatCurrency(parseFloat(price));
+            if (unitPriceDisplay) unitPriceDisplay.value = formatCurrency(parseFloat(price));
             if (unitPriceHidden) unitPriceHidden.value = parseFloat(price).toFixed(2);
 
             // Default qty to 1 if empty
             const qtyInput = row.querySelector('.proc-item-qty');
-            if (qtyInput && (!qtyInput.value || procToNumber(qtyInput.value) < 1)) {
+            if (qtyInput && (!qtyInput.value || toNumber(qtyInput.value) < 1)) {
                 qtyInput.value = '1';
             }
             updateProcRowTotal(btn);

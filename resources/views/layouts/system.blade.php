@@ -315,6 +315,16 @@
                 @endif
             });
 
+            // Global Utility Functions
+            function toNumber(value) {
+                const n = parseFloat(value);
+                return Number.isFinite(n) ? n : 0;
+            }
+
+            function formatCurrency(num) {
+                return '₱' + toNumber(num).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
             // Global Notification Functions
             function showSuccessNotification(message) {
                 const notif = document.createElement('div');

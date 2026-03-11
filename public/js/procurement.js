@@ -78,15 +78,6 @@
         // --- Procurement Multi-Row Material Functions ---
         var procRowIndex = 0;
 
-        function procFormatCurrency(num) {
-            return 'â‚±' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function procToNumber(value) {
-            const n = parseFloat(value);
-            return Number.isFinite(n) ? n : 0;
-        }
-
         function updateProcRowTotal(el) {
             const row = el.closest('.procurement-item-row');
             if (!row) return;
@@ -99,13 +90,13 @@
             let unit = 0;
             if (select) {
                 const opt = select.options[select.selectedIndex];
-                unit = procToNumber(opt ? opt.getAttribute('data-price') : null);
+                unit = toNumber(opt ? opt.getAttribute('data-price') : null);
             }
-            const qty = procToNumber(qtyInput?.value || '0');
-            if (unitPriceDisplay) unitPriceDisplay.value = unit ? procFormatCurrency(unit) : '';
+            const qty = toNumber(qtyInput?.value || '0');
+            if (unitPriceDisplay) unitPriceDisplay.value = unit ? formatCurrency(unit) : '';
             if (unitPriceHidden) unitPriceHidden.value = unit ? unit.toFixed(2) : '';
             const total = unit * (qty || 0);
-            if (lineTotalDisplay) lineTotalDisplay.textContent = procFormatCurrency(total);
+            if (lineTotalDisplay) lineTotalDisplay.textContent = formatCurrency(total);
             updateProcGrandTotal();
         }
 
@@ -117,13 +108,13 @@
                 let unit = 0;
                 if (select) {
                     const opt = select.options[select.selectedIndex];
-                    unit = procToNumber(opt ? opt.getAttribute('data-price') : null);
+                    unit = toNumber(opt ? opt.getAttribute('data-price') : null);
                 }
-                const qty = procToNumber(qtyInput?.value || '0');
+                const qty = toNumber(qtyInput?.value || '0');
                 grand += unit * (qty || 0);
             });
             const el = document.getElementById('procGrandTotal');
-            if (el) el.textContent = procFormatCurrency(grand);
+            if (el) el.textContent = formatCurrency(grand);
         }
 
         function addProcurementMaterialRow() {
@@ -243,12 +234,12 @@
             // Auto-fill pricing
             const unitPriceDisplay = row.querySelector('.proc-item-unit-price');
             const unitPriceHidden = row.querySelector('.proc-item-unit-price-hidden');
-            if (unitPriceDisplay) unitPriceDisplay.value = procFormatCurrency(parseFloat(price));
+            if (unitPriceDisplay) unitPriceDisplay.value = formatCurrency(parseFloat(price));
             if (unitPriceHidden) unitPriceHidden.value = parseFloat(price).toFixed(2);
 
             // Default qty to 1 if empty
             const qtyInput = row.querySelector('.proc-item-qty');
-            if (qtyInput && (!qtyInput.value || procToNumber(qtyInput.value) < 1)) {
+            if (qtyInput && (!qtyInput.value || toNumber(qtyInput.value) < 1)) {
                 qtyInput.value = '1';
             }
             updateProcRowTotal(btn);
@@ -1178,44 +1169,3 @@
         document.getElementById('supplierNoMatch').classList.add('hidden');
         input.focus();
     }
-
-// Toast Notification Functions
-function showSuccessNotification(message) {
-    const notif = document.createElement('div');
-    notif.className = 'fixed top-5 right-5 z-[9999] animate-fadeIn';
-    notif.innerHTML = `
-        <div class="flex items-center gap-3 bg-green-100 border-2 border-green-400 text-green-800 rounded-lg px-6 py-4 shadow-lg">
-            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-            </svg>
-            <span class="font-medium text-sm">${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="text-green-600 hover:text-green-800 ml-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-    `;
-    document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 4000);
-}
-
-function showErrorNotification(message) {
-    const notif = document.createElement('div');
-    notif.className = 'fixed top-5 right-5 z-[9999] animate-fadeIn';
-    notif.innerHTML = `
-        <div class="flex items-center gap-3 bg-red-100 border-2 border-red-400 text-red-800 rounded-lg px-6 py-4 shadow-lg">
-            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-            </svg>
-            <span class="font-medium text-sm">${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="text-red-600 hover:text-red-800 ml-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-    `;
-    document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 5000);
-}
