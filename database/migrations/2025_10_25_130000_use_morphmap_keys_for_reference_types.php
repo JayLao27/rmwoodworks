@@ -14,7 +14,7 @@ return new class extends Migration
         // Only update if table exists
         if (Schema::hasTable('inventory_movements')) {
             DB::table('inventory_movements')
-                ->where('reference_type', 'App\Models\PurchaseOrder')
+                ->where('reference_type', 'App\Models\Procurement\PurchaseOrder')
                 ->update(['reference_type' => 'purchase_order']);
                 
             DB::table('inventory_movements')
