@@ -43,22 +43,22 @@ class AuditTrailController extends Controller
         $inventory = $filterDates(InventoryMovement::with(['user', 'item'])->latest())
             ->limit($limit)
             ->get()
-            ->map(function ($item) {
-                $action = $item->movement_type === 'in' ? 'Stock In' : 'Stock Out';
-                $color = $item->movement_type === 'in' ? 'emerald' : 'orange';
+            ->map(function ($inventoryMovement) {
+                $action = $inventoryMovement->movement_type === 'in' ? 'Stock In' : 'Stock Out';
+                $color = $inventoryMovement->movement_type === 'in' ? 'emerald' : 'orange';
 
-                if ($item->movement_type === 'in' && str_contains($item->reference_type ?? '', 'WorkOrder')) {
+                if ($inventoryMovement->movement_type === 'in' && str_contains($inventoryMovement->reference_type ?? '', 'WorkOrder')) {
                     $action = 'Completed';
                 }
 
                 return [
                     'type' => 'Inventory',
                     'action' => $action,
-                    'description' => ($item->item->name ?? $item->item->product_name ?? 'Unknown Item') . ' (' . $item->quantity . ') - ' . $item->notes,
-                    'user' => $item->user->name ?? 'Admin',
-                    'user_role' => $item->user->role ?? 'admin',
-                    'date' => $item->created_at,
-                    'status' => $item->status,
+                    'description' => ($inventoryMovement->item->name ?? $inventoryMovement->item->product_name ?? 'Unknown Item') . ' (' . $inventoryMovement->quantity . ') - ' . $inventoryMovement->notes,
+                    'user' => $inventoryMovement->user->name ?? 'Admin',
+                    'user_role' => $inventoryMovement->user->role ?? 'admin',
+                    'date' => $inventoryMovement->created_at,
+                    'status' => $inventoryMovement->status,
                     'color' => $color
                 ];
             });
@@ -66,15 +66,15 @@ class AuditTrailController extends Controller
         $sales = $filterUpdatedDates(SalesOrder::with(['user', 'customer'])->latest())
             ->limit($limit)
             ->get()
-            ->map(function ($item) {
+            ->map(function ($salesOrderRecord) {
                 return [
                     'type' => 'Sales',
-                    'action' => 'Order ' . $item->status,
-                    'description' => 'Order #' . $item->order_number . ' for ' . ($item->customer->name ?? 'Unknown Customer'),
-                    'user' => $item->user->name ?? 'Admin',
-                    'user_role' => $item->user->role ?? 'admin',
-                    'date' => $item->updated_at,
-                    'status' => $item->status,
+                    'action' => 'Order ' . $salesOrderRecord->status,
+                    'description' => 'Order #' . $salesOrderRecord->order_number . ' for ' . ($salesOrderRecord->customer->name ?? 'Unknown Customer'),
+                    'user' => $salesOrderRecord->user->name ?? 'Admin',
+                    'user_role' => $salesOrderRecord->user->role ?? 'admin',
+                    'date' => $salesOrderRecord->updated_at,
+                    'status' => $salesOrderRecord->status,
                     'color' => 'indigo'
                 ];
             });
@@ -82,31 +82,31 @@ class AuditTrailController extends Controller
         $accounting = $filterDates(Accounting::with(['user', 'salesOrder', 'purchaseOrder'])->latest())
             ->limit($limit)
             ->get()
-            ->map(function ($item) {
+            ->map(function ($accountingEntry) {
                 return [
                     'type' => 'Accounting',
-                    'action' => $item->transaction_type === 'Income' ? 'Payment Received' : 'Payment Made',
-                    'description' => 'Amount: P' . number_format($item->amount, 2) . ' - ' . $item->description,
-                    'user' => $item->user->name ?? 'Admin',
-                    'user_role' => $item->user->role ?? 'admin',
-                    'date' => $item->created_at,
+                    'action' => $accountingEntry->transaction_type === 'Income' ? 'Payment Received' : 'Payment Made',
+                    'description' => 'Amount: P' . number_format($accountingEntry->amount, 2) . ' - ' . $accountingEntry->description,
+                    'user' => $accountingEntry->user->name ?? 'Admin',
+                    'user_role' => $accountingEntry->user->role ?? 'admin',
+                    'date' => $accountingEntry->created_at,
                     'status' => 'Completed',
-                    'color' => $item->transaction_type === 'Income' ? 'emerald' : 'red'
+                    'color' => $accountingEntry->transaction_type === 'Income' ? 'emerald' : 'red'
                 ];
             });
 
         $production = $filterUpdatedDates(WorkOrder::with(['user', 'product'])->latest())
             ->limit($limit)
             ->get()
-            ->map(function ($item) {
+            ->map(function ($workOrderRecord) {
                 return [
                     'type' => 'Production',
-                    'action' => 'Work Order ' . str_replace('_', ' ', $item->status),
-                    'description' => 'WO #' . $item->order_number . ' for ' . ($item->product->product_name ?? 'Unknown Product'),
-                    'user' => $item->user->name ?? 'Admin',
-                    'user_role' => $item->user->role ?? 'admin',
-                    'date' => $item->updated_at,
-                    'status' => $item->status,
+                    'action' => 'Work Order ' . str_replace('_', ' ', $workOrderRecord->status),
+                    'description' => 'WO #' . $workOrderRecord->order_number . ' for ' . ($workOrderRecord->product->product_name ?? 'Unknown Product'),
+                    'user' => $workOrderRecord->user->name ?? 'Admin',
+                    'user_role' => $workOrderRecord->user->role ?? 'admin',
+                    'date' => $workOrderRecord->updated_at,
+                    'status' => $workOrderRecord->status,
                     'color' => 'purple'
                 ];
             });
@@ -114,15 +114,15 @@ class AuditTrailController extends Controller
         $procurement = $filterUpdatedDates(PurchaseOrder::with(['user', 'supplier'])->latest())
             ->limit($limit)
             ->get()
-            ->map(function ($item) {
+            ->map(function ($purchaseOrderRecord) {
                 return [
                     'type' => 'Procurement',
-                    'action' => 'Purchase Order ' . $item->status,
-                    'description' => 'PO #' . $item->order_number . ' from ' . ($item->supplier->name ?? 'Unknown Supplier'),
-                    'user' => $item->user->name ?? 'Admin',
-                    'user_role' => $item->user->role ?? 'admin',
-                    'date' => $item->updated_at,
-                    'status' => $item->status,
+                    'action' => 'Purchase Order ' . $purchaseOrderRecord->status,
+                    'description' => 'PO #' . $purchaseOrderRecord->order_number . ' from ' . ($purchaseOrderRecord->supplier->name ?? 'Unknown Supplier'),
+                    'user' => $purchaseOrderRecord->user->name ?? 'Admin',
+                    'user_role' => $purchaseOrderRecord->user->role ?? 'admin',
+                    'date' => $purchaseOrderRecord->updated_at,
+                    'status' => $purchaseOrderRecord->status,
                     'color' => 'blue'
                 ];
             });
@@ -130,16 +130,16 @@ class AuditTrailController extends Controller
         $systemActivities = $filterDates(\App\Models\System\SystemActivity::with(['user'])->latest())
             ->limit($limit)
             ->get()
-            ->map(function ($item) {
+            ->map(function ($systemActivity) {
                 return [
-                    'type' => $item->type,
-                    'action' => $item->action,
-                    'description' => $item->description,
-                    'user' => $item->user->name ?? 'Admin',
-                    'user_role' => $item->user->role ?? 'admin',
-                    'date' => $item->created_at,
+                    'type' => $systemActivity->type,
+                    'action' => $systemActivity->action,
+                    'description' => $systemActivity->description,
+                    'user' => $systemActivity->user->name ?? 'Admin',
+                    'user_role' => $systemActivity->user->role ?? 'admin',
+                    'date' => $systemActivity->created_at,
                     'status' => 'Logged',
-                    'color' => $item->color ?? 'slate'
+                    'color' => $systemActivity->color ?? 'slate'
                 ];
             });
 

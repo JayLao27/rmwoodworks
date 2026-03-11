@@ -27,14 +27,14 @@ class ProductionController extends Controller
         $statusCounts = [
             'pending' => WorkOrder::where('status', 'pending')->count(),
             'in_progress' => WorkOrder::where('status', 'in_progress')
-                ->where(function($q) {
-                    $q->whereNull('due_date')
+                ->where(function($query) {
+                    $query->whereNull('due_date')
                       ->orWhere('due_date', '>=', now()->startOfDay());
                 })->count(),
             'quality_check' => WorkOrder::where('status', 'quality_check')->count(),
             'completed' => WorkOrder::where('status', 'completed')->count(),
-            'overdue' => WorkOrder::where(function($q) {
-                $q->where('status', 'overdue')
+            'overdue' => WorkOrder::where(function($query) {
+                $query->where('status', 'overdue')
                   ->orWhere(function($sub) {
                       $sub->where('status', '!=', 'completed')
                           ->where('status', '!=', 'cancelled')
@@ -406,7 +406,7 @@ class ProductionController extends Controller
     {
         $workOrder->load(['product', 'salesOrder.customer']);
 
-        $data = [
+        $workOrderData = [
             'id' => $workOrder->id,
             'order_number' => $workOrder->order_number,
             'product_name' => $workOrder->product_name ?? $workOrder->product->product_name ?? 'Unknown',
@@ -419,7 +419,7 @@ class ProductionController extends Controller
             'notes' => $workOrder->notes ?? '', 
         ];
 
-        return response()->json(['success' => true, 'workOrder' => $data]);
+        return response()->json(['success' => true, 'workOrder' => $workOrderData]);
     }
 
     public function cancel(WorkOrder $workOrder)
