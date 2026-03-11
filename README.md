@@ -115,6 +115,7 @@ wood-inventory-management/
 8. Seed database (optional): `php artisan db:seed`
 9. Build frontend assets: `npm run build`
 10. Start development server: `php artisan serve`
+11. Start frontend: `npm run dev`
 
 ### Default Accounts (Seeder)
 
