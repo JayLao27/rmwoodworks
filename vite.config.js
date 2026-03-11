@@ -5,7 +5,7 @@ export default defineConfig({
     server: {
         host: '0.0.0.0',
         hmr: {
-            host: 'wood-inventory-management.test',
+            host: 'localhost',
         },
     },
     plugins: [
