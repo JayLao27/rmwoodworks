@@ -108,7 +108,7 @@ wood-inventory-management/
 1. Clone the repository
 2. Install PHP dependencies: `composer install`
 3. Install Node.js dependencies: `npm install`
-4. Copy `.env.example` to `.env`
+4. Run "cp .env.example .env"
 5. Generate application key: `php artisan key:generate`
 6. Configure database connection in `.env`
 7. Run migrations: `php artisan migrate`
