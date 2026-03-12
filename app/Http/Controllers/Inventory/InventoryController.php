@@ -271,6 +271,12 @@ class InventoryController extends Controller
                 ->count();
 
             if ($activeOrdersCount > 0) {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot delete product associated with active orders.',
+                    ], 409);
+                }
                 return redirect()->back()->with('error', 'Cannot delete item associated with active orders');
             }
         } else {
