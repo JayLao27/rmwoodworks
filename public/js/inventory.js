@@ -451,6 +451,7 @@
                     if (!response.ok) {
                         let errMsg;
                         try { const d = await response.json(); errMsg = d.message; } catch (_) {}
+                        if (response.status === 409) throw new Error(errMsg || 'Cannot delete product associated with active orders.');
                         if (response.status === 404) throw new Error(errMsg || 'Item not found (404). It may have already been deleted.');
                         if (response.status === 403) throw new Error(errMsg || 'Permission denied (403). You are not allowed to delete this item.');
                         if (response.status === 500) throw new Error(errMsg || 'Server error (500). Please try again.');
